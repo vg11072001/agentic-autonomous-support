@@ -1,26 +1,15 @@
-# --- Core: CockroachDB (Postgres-wire) driver ---
 psycopg[binary]>=3.1
-
-# --- Orchestration ---
+psycopg-pool>=3.1
 langgraph>=0.2
-
-# --- Embeddings (local, 384-dim, matches VECTOR(384) schema) ---
 sentence-transformers>=2.2
 numpy>=1.24
-scikit-learn>=1.3        # KMeans for the KB gap-clustering job (17)
-
-# --- AWS: Bedrock reasoning + Lambda/S3 background jobs ---
+scikit-learn>=1.3
 boto3>=1.34
-
-# --- API + frontend backend ---
 fastapi>=0.110
 uvicorn>=0.29
 pydantic>=2.0
 python-dotenv>=1.0
-
-# --- Dataset generation (phases 01-04) ---
 faker>=24.0
 pandas>=2.0
-
-# --- Alt UI (internal ops console) ---
-streamlit>=1.33
+aiofiles>=23.0
+httpx>=0.27

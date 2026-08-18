@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "api/index.py" }
+  ],
+  "env": {
+    "CRDB_URL": "@crdb_url",
+    "AWS_REGION": "@aws_region",
+    "BEDROCK_MODEL_ID": "@bedrock_model_id",
+    "BEDROCK_ENABLED": "@bedrock_enabled",
+    "GEMINI_API_KEY": "@gemini_api_key",
+    "GEMINI_ENABLED": "@gemini_enabled",
+    "FIREWALL_LLM": "@firewall_llm"
+  }
+}
