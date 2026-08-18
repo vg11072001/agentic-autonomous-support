@@ -1,0 +1,198 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560"
+     font-family="'Segoe UI', system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-blue" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#4a90d9"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#9966ff"/>
+    </marker>
+    <marker id="arr-red" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#e05c5c"/>
+    </marker>
+    <marker id="arr-green" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#4abf80"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#e89a30"/>
+    </marker>
+    <filter id="glow-blue">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="560" rx="14" fill="#0d1117"/>
+  <rect x="1" y="1" width="958" height="558" rx="13" fill="none" stroke="#21262d" stroke-width="1"/>
+
+  <!-- Title row -->
+  <text x="480" y="34" text-anchor="middle" fill="#e6edf3" font-size="17" font-weight="700" letter-spacing="0.5">AURORA SUPPORT — AGENT PIPELINE</text>
+  <text x="480" y="52" text-anchor="middle" fill="#484f58" font-size="11">LangGraph StateGraph · CockroachDB Vector Memory · AWS Bedrock</text>
+
+  <!-- ═══════════════════ LANGGRAPH BOX ═══════════════════ -->
+  <rect x="16" y="66" width="928" height="190" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <rect x="16" y="66" width="145" height="18" rx="4" fill="#161b22"/>
+  <text x="26" y="79" fill="#484f58" font-size="9" font-weight="600" letter-spacing="1.8">LANGGRAPH STATEGRAPH</text>
+
+  <!-- ── Node: PLANNER ── -->
+  <rect x="30" y="96" width="118" height="56" rx="8" fill="#161b22" stroke="#1f6feb" stroke-width="1.5" filter="url(#glow-blue)"/>
+  <text x="89" y="118" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="700">PLANNER</text>
+  <text x="89" y="133" text-anchor="middle" fill="#30363d" font-size="8.5">Log turn</text>
+  <text x="89" y="144" text-anchor="middle" fill="#30363d" font-size="8.5">Input Firewall</text>
+
+  <!-- arrow -->
+  <line x1="148" y1="124" x2="168" y2="124" stroke="#4a90d9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- ── Node: RETRIEVAL ── -->
+  <rect x="168" y="96" width="128" height="56" rx="8" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+  <text x="232" y="118" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="700">RETRIEVAL</text>
+  <text x="232" y="133" text-anchor="middle" fill="#30363d" font-size="8.5">KB · History · Cases</text>
+  <text x="232" y="144" text-anchor="middle" fill="#30363d" font-size="8.5">Signal Profile</text>
+
+  <!-- arrow -->
+  <line x1="296" y1="124" x2="316" y2="124" stroke="#4a90d9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- ── Node: CASE STATE ── -->
+  <rect x="316" y="96" width="132" height="56" rx="8" fill="#161b22" stroke="#1f6feb" stroke-width="1.5"/>
+  <text x="382" y="118" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="700">CASE STATE</text>
+  <text x="382" y="133" text-anchor="middle" fill="#30363d" font-size="8.5">Working Memory</text>
+  <text x="382" y="144" text-anchor="middle" fill="#30363d" font-size="8.5">Autonomy Ceiling ✦</text>
+
+  <!-- arrow -->
+  <line x1="448" y1="124" x2="468" y2="124" stroke="#4a90d9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- ── Node: RESOLUTION ── -->
+  <rect x="468" y="96" width="130" height="56" rx="8" fill="#161b22" stroke="#8b5cf6" stroke-width="1.5" filter="url(#glow-blue)"/>
+  <text x="533" y="118" text-anchor="middle" fill="#c084fc" font-size="11" font-weight="700">RESOLUTION</text>
+  <text x="533" y="133" text-anchor="middle" fill="#30363d" font-size="8.5">AWS Bedrock (LLM)</text>
+  <text x="533" y="144" text-anchor="middle" fill="#30363d" font-size="8.5">Versioned Skill</text>
+
+  <!-- arrow -->
+  <line x1="598" y1="124" x2="618" y2="124" stroke="#4a90d9" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- ── Node: GUARDRAIL ── -->
+  <rect x="618" y="96" width="130" height="56" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+  <text x="683" y="118" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700">GUARDRAIL</text>
+  <text x="683" y="133" text-anchor="middle" fill="#30363d" font-size="8.5">T1: SQL/regex (free)</text>
+  <text x="683" y="144" text-anchor="middle" fill="#30363d" font-size="8.5">T2: LLM critique</text>
+
+  <!-- arrow up-right to ESCALATE -->
+  <path d="M748,110 L768,95" stroke="#e05c5c" stroke-width="1.5" marker-end="url(#arr-red)" fill="none"/>
+  <!-- arrow down-right to EVALUATE -->
+  <path d="M748,138 L768,153" stroke="#4abf80" stroke-width="1.5" marker-end="url(#arr-green)" fill="none"/>
+
+  <!-- ── Node: ESCALATE ── -->
+  <rect x="768" y="78" width="154" height="44" rx="8" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+  <text x="845" y="97" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700">ESCALATE</text>
+  <text x="845" y="112" text-anchor="middle" fill="#30363d" font-size="8.5">Human review queue</text>
+
+  <!-- ── Node: EVALUATE ── -->
+  <rect x="768" y="136" width="154" height="44" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="845" y="155" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">EVALUATE</text>
+  <text x="845" y="170" text-anchor="middle" fill="#30363d" font-size="8.5">5-dim LLM Judge</text>
+
+  <!-- ✦ Autonomy ceiling footnote -->
+  <text x="30" y="238" fill="#484f58" font-size="9">✦ Deterministic rule — zero LLM calls for trust decisions</text>
+
+  <!-- ═══════════════════ COCKROACHDB LAYER ═══════════════════ -->
+  <rect x="16" y="272" width="928" height="146" rx="10" fill="#0d1117" stroke="#6e40c9" stroke-width="1.5"/>
+  <rect x="16" y="272" width="195" height="18" rx="4" fill="#1a1033"/>
+  <text x="26" y="285" fill="#6e40c9" font-size="9" font-weight="700" letter-spacing="1.8">COCKROACHDB — AGENT MEMORY LAYER</text>
+
+  <!-- CRDB box 1: KB Vector Index -->
+  <rect x="28" y="298" width="165" height="104" rx="7" fill="#161022" stroke="#6e40c9" stroke-width="1"/>
+  <text x="110" y="317" text-anchor="middle" fill="#9966ff" font-size="10" font-weight="700">VECTOR INDEX</text>
+  <text x="110" y="332" text-anchor="middle" fill="#6e40c9" font-size="9">kb_chunks</text>
+  <text x="110" y="347" text-anchor="middle" fill="#6e40c9" font-size="9">(embedding)</text>
+  <rect x="38" y="355" width="145" height="1" fill="#21262d"/>
+  <text x="110" y="370" text-anchor="middle" fill="#484f58" font-size="8">Global · No prefix</text>
+  <text x="110" y="383" text-anchor="middle" fill="#484f58" font-size="8">Policy KB search</text>
+  <text x="110" y="396" text-anchor="middle" fill="#484f58" font-size="8">35+ policy docs</text>
+
+  <!-- CRDB box 2: Conversations -->
+  <rect x="206" y="298" width="190" height="104" rx="7" fill="#161022" stroke="#6e40c9" stroke-width="1"/>
+  <text x="301" y="317" text-anchor="middle" fill="#9966ff" font-size="10" font-weight="700">VECTOR INDEX</text>
+  <text x="301" y="332" text-anchor="middle" fill="#6e40c9" font-size="9">conversations</text>
+  <text x="301" y="347" text-anchor="middle" fill="#6e40c9" font-size="9">(customer_id, embedding)</text>
+  <rect x="216" y="355" width="170" height="1" fill="#21262d"/>
+  <text x="301" y="370" text-anchor="middle" fill="#484f58" font-size="8">Per-customer C-SPANN tree</text>
+  <text x="301" y="383" text-anchor="middle" fill="#484f58" font-size="8">History stays O(log n)</text>
+  <text x="301" y="396" text-anchor="middle" fill="#484f58" font-size="8">regardless of corpus size</text>
+
+  <!-- CRDB box 3: Skills -->
+  <rect x="410" y="298" width="145" height="104" rx="7" fill="#161022" stroke="#6e40c9" stroke-width="1"/>
+  <text x="482" y="317" text-anchor="middle" fill="#9966ff" font-size="10" font-weight="700">SKILLS</text>
+  <text x="482" y="332" text-anchor="middle" fill="#6e40c9" font-size="9">Versioned playbooks</text>
+  <rect x="420" y="340" width="125" height="1" fill="#21262d"/>
+  <text x="482" y="355" text-anchor="middle" fill="#484f58" font-size="8">VECTOR INDEX</text>
+  <text x="482" y="368" text-anchor="middle" fill="#484f58" font-size="8">(trigger_embedding)</text>
+  <text x="482" y="381" text-anchor="middle" fill="#484f58" font-size="8">Semantic selection</text>
+  <text x="482" y="394" text-anchor="middle" fill="#484f58" font-size="8">Human-promoted drafts</text>
+
+  <!-- CRDB box 4: Audit -->
+  <rect x="569" y="298" width="155" height="104" rx="7" fill="#161022" stroke="#6e40c9" stroke-width="1"/>
+  <text x="646" y="317" text-anchor="middle" fill="#9966ff" font-size="10" font-weight="700">AUDIT LOG</text>
+  <text x="646" y="332" text-anchor="middle" fill="#6e40c9" font-size="9">Hash-chained records</text>
+  <rect x="579" y="340" width="135" height="1" fill="#21262d"/>
+  <text x="646" y="355" text-anchor="middle" fill="#484f58" font-size="8">SHA-256 chain</text>
+  <text x="646" y="368" text-anchor="middle" fill="#484f58" font-size="8">Tamper-evident</text>
+  <text x="646" y="381" text-anchor="middle" fill="#484f58" font-size="8">Alter 1 record → chain</text>
+  <text x="646" y="394" text-anchor="middle" fill="#484f58" font-size="8">breaks at that point</text>
+
+  <!-- CRDB box 5: Transactional -->
+  <rect x="738" y="298" width="190" height="104" rx="7" fill="#161022" stroke="#6e40c9" stroke-width="1"/>
+  <text x="833" y="317" text-anchor="middle" fill="#9966ff" font-size="10" font-weight="700">TRANSACTIONAL DATA</text>
+  <text x="833" y="332" text-anchor="middle" fill="#6e40c9" font-size="9">Co-located with embeddings</text>
+  <rect x="748" y="340" width="170" height="1" fill="#21262d"/>
+  <text x="833" y="355" text-anchor="middle" fill="#484f58" font-size="8">customers · orders</text>
+  <text x="833" y="368" text-anchor="middle" fill="#484f58" font-size="8">payments · refunds</text>
+  <text x="833" y="381" text-anchor="middle" fill="#484f58" font-size="8">fraud_flags · profiles</text>
+  <text x="833" y="394" text-anchor="middle" fill="#484f58" font-size="8">No separate vector store</text>
+
+  <!-- Dashed connectors: pipeline → crdb -->
+  <line x1="232" y1="152" x2="232" y2="272" stroke="#6e40c9" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <line x1="382" y1="152" x2="382" y2="272" stroke="#6e40c9" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <line x1="533" y1="152" x2="533" y2="272" stroke="#6e40c9" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <line x1="683" y1="152" x2="683" y2="272" stroke="#6e40c9" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+
+  <!-- ═══════════════════ BOTTOM ROW ═══════════════════ -->
+
+  <!-- AWS Box -->
+  <rect x="16" y="432" width="296" height="112" rx="10" fill="#0d1117" stroke="#e89a30" stroke-width="1.5"/>
+  <rect x="16" y="432" width="160" height="18" rx="4" fill="#1a1200"/>
+  <text x="26" y="445" fill="#e89a30" font-size="9" font-weight="700" letter-spacing="1.8">AWS SERVICES</text>
+  <text x="26" y="466" fill="#b36a00" font-size="9.5" font-weight="600">Amazon Bedrock</text>
+  <text x="26" y="481" fill="#484f58" font-size="8.5">Resolution · Guardrail T2 · Judge · Simulator</text>
+  <text x="26" y="497" fill="#b36a00" font-size="9.5" font-weight="600">AWS Lambda + S3</text>
+  <text x="26" y="512" fill="#484f58" font-size="8.5">S3-triggered KB policy doc embedder</text>
+  <text x="26" y="527" fill="#484f58" font-size="8.5">Auto-ingests new docs into CockroachDB</text>
+
+  <!-- Simulation Flywheel Box -->
+  <rect x="326" y="432" width="300" height="112" rx="10" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <rect x="326" y="432" width="195" height="18" rx="4" fill="#0a1f0d"/>
+  <text x="336" y="445" fill="#3fb950" font-size="9" font-weight="700" letter-spacing="1.8">SIMULATION FLYWHEEL</text>
+  <text x="336" y="466" fill="#484f58" font-size="8.5">SimulatorAgent (Bedrock) plays adversarial customer</text>
+  <text x="336" y="480" fill="#484f58" font-size="8.5">Runs live orchestrator with is_simulated=True</text>
+  <text x="336" y="494" fill="#484f58" font-size="8.5">Evaluation Agent judges each scenario turn</text>
+  <text x="336" y="508" fill="#3fb950" font-size="9" font-weight="600">Gate: blocks deploy if pass rate &lt; 85%</text>
+  <text x="336" y="524" fill="#484f58" font-size="8.5">Results → simulation_runs in CockroachDB</text>
+
+  <!-- KB Gap Box -->
+  <rect x="640" y="432" width="304" height="112" rx="10" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+  <rect x="640" y="432" width="185" height="18" rx="4" fill="#0a1628"/>
+  <text x="650" y="445" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="1.8">CONTINUOUS LEARNING LOOP</text>
+  <text x="650" y="466" fill="#484f58" font-size="8.5">KMeans clusters escalation embeddings</text>
+  <text x="650" y="480" fill="#484f58" font-size="8.5">Identifies clusters far from existing KB (&gt; 0.4)</text>
+  <text x="650" y="494" fill="#484f58" font-size="8.5">Bedrock drafts new policy article</text>
+  <text x="650" y="508" fill="#58a6ff" font-size="9" font-weight="600">Human approves → auto-embeds into kb_chunks</text>
+  <text x="650" y="524" fill="#484f58" font-size="8.5">Low-score export for weekly retraining</text>
+
+  <!-- Connectors: crdb → bottom boxes -->
+  <line x1="164" y1="418" x2="164" y2="432" stroke="#e89a30" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+  <line x1="476" y1="418" x2="476" y2="432" stroke="#3fb950" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+  <line x1="792" y1="418" x2="792" y2="432" stroke="#58a6ff" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+
+</svg>
