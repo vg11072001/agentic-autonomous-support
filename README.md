@@ -5,7 +5,7 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-E34F26.svg)](https://langchain-ai.github.io/langgraph/)
 [![CockroachDB](https://img.shields.io/badge/CockroachDB-v25.2+-6933FF.svg)](https://cockroachlabs.com)
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-FF9900.svg)](https://aws.amazon.com/bedrock/)
-[![License: Apache](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+[![License: Apache](https://img.shields.io/badge/License-Apache-blue.svg)](LICENSE.txt)
 
 > **The model generates the response. Memory, retrieval, policies, guardrails, and evaluation determine what the model is allowed to know and do.**
 
