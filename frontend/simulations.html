@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulation Flywheel — Aurora Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#10233F;--paper:#FAFAF8;--saffron:#F2A93B;--forest:#1F8A55;--rust:#C0432E;--slate:#5B6472;--line:#E7E4DC}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  .bar{background:var(--ink);color:#fff;padding:13px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .bar-brand{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem}
+  .bar-brand span{color:var(--saffron)}
+  .bar nav{display:flex;gap:18px;font-family:'Inter',sans-serif;font-weight:500;font-size:.9rem}
+  .bar nav a{color:#fff;text-decoration:none;opacity:.75;cursor:pointer}
+  .bar nav a:hover,.bar nav a.active{opacity:1}
+  .bar nav a.active{border-bottom:2px solid var(--saffron);padding-bottom:2px}
+  main{flex:1;max-width:980px;margin:0 auto;padding:40px 24px;width:100%;display:flex;flex-direction:column;gap:22px}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:1.7rem;margin:0}
+  .lede{color:var(--slate);font-size:.95rem;margin:0 0 4px;max-width:70ch;line-height:1.5}
+
+  /* run controls */
+  .run-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:.75rem;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.03em}
+  .field input{border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:.88rem;font-family:inherit;color:var(--ink);background:var(--paper);width:90px}
+  .field input:focus{outline:2px solid var(--saffron);border-color:transparent}
+  .btn{padding:8px 18px;border-radius:8px;border:none;font-family:inherit;font-weight:600;font-size:.88rem;cursor:pointer;transition:opacity .15s}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{opacity:.85}
+  .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.8rem;font-weight:600}
+  .status-pill.idle{background:#F4F2EC;color:var(--slate)}
+  .status-pill.running{background:#FDF1DC;color:#9C6B12}
+  .status-pill.done{background:#E7F5EC;color:var(--forest)}
+  .status-pill.error{background:#FBEAE6;color:var(--rust)}
+  .spin{display:inline-block;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* tables */
+  .card{border:1px solid var(--line);background:#fff;border-radius:12px;overflow:hidden}
+  .card table{width:100%;border-collapse:collapse;font-size:.88rem}
+  .card th{text-align:left;padding:11px 14px;background:#F4F2EC;color:var(--slate);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line)}
+  .card td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  .card tr:last-child td{border-bottom:none}
+  .card tr.clickable{cursor:pointer}
+  .card tr.clickable:hover{background:#FAF8F2}
+  .card-empty{color:var(--slate);font-size:.9rem;padding:30px;text-align:center}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:.76rem;font-weight:600}
+  .badge.pass{background:#E7F5EC;color:var(--forest)}
+  .badge.fail{background:#FBEAE6;color:var(--rust)}
+  .badge::before{content:'●';font-size:.6rem}
+
+  .mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.82rem;color:var(--slate)}
+  .link{color:var(--ink);text-decoration:underline;font-size:.82rem}
+
+  /* panels */
+  .panel{display:none;border:1px solid var(--line);background:#fff;border-radius:12px;padding:20px}
+  .panel.open{display:block}
+  .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+  .panel-head h2{font-family:'Fraunces',serif;font-size:1.15rem;margin:0}
+  .back-link{color:var(--slate);text-decoration:none;font-size:.85rem;font-weight:500;cursor:pointer}
+  .back-link:hover{color:var(--ink)}
+
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .stat{border:1px solid var(--line);border-radius:9px;padding:10px 14px;min-width:110px}
+  .stat .num{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:600}
+  .stat .lbl{color:var(--slate);font-size:.72rem;text-transform:uppercase;letter-spacing:.03em}
+
+  .story-cell{max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--slate);font-size:.82rem}
+
+  footer{color:var(--slate);font-size:.8rem;padding:20px 26px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="bar-brand">Auro<span>ra</span> Support</div>
+  <nav>
+    <a class="active" id="navVersions" onclick="showView('versions')">Versions</a>
+    <a id="navScenarios" onclick="showView('scenarios')">Scenarios</a>
+  </nav>
+</div>
+
+<main>
+  <!-- ── Versions view ─────────────────────────────────────────── -->
+  <div id="versionsView">
+  <div>
+    <h1>Simulation flywheel</h1>
+      <p class="lede">Bedrock plays the customer against the live orchestrator graph, offline,
+      before anything ships. Every simulated turn is scored by an LLM judge and written to the
+      same CockroachDB tables real conversations use — tagged <code>is_simulated</code>.</p>
+  </div>
+
+    <div class="run-bar">
+      <div class="field">
+        <label>Scenarios (n)</label>
+        <input id="inputN" type="number" value="10" min="1" max="200">
+      </div>
+      <div class="field">
+        <label>Prompt version</label>
+        <input id="inputVersion" type="text" value="v1" style="width:80px">
+      </div>
+      <div class="field">
+        <label>Gate baseline</label>
+        <input id="inputBaseline" type="number" value="0.85" min="0" max="1" step="0.05" style="width:80px">
+      </div>
+      <button class="btn btn-primary" id="runBtn" onclick="triggerRun()">▶ Run</button>
+      <div id="simStatus" class="status-pill idle">Idle</div>
+    </div>
+
+    <div class="card">
+    <table>
+        <thead>
+          <tr>
+            <th>Prompt version</th>
+            <th>Runs</th>
+            <th>Passed</th>
+            <th>Pass rate</th>
+            <th>Last run</th>
+          </tr>
+        </thead>
+        <tbody id="versionsBody">
+          <tr><td colspan="5" class="card-empty">Loading…</td></tr>
+        </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ── Version detail panel ──────────────────────────────────── -->
+  <div class="panel" id="versionPanel">
+    <div class="panel-head">
+      <a class="back-link" onclick="showView('versions')">← All versions</a>
+      <h2 id="versionTitle"></h2>
+    </div>
+    <div class="stat-row" id="versionStats"></div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Intent / status</th>
+            <th>Story</th>
+            <th>Result</th>
+            <th>Conversation</th>
+          </tr>
+        </thead>
+        <tbody id="versionRunsBody">
+          <tr><td colspan="5" class="card-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Scenarios view ────────────────────────────────────────── -->
+  <div id="scenariosView" style="display:none">
+    <div style="margin-bottom:16px">
+      <h1>Scenario library</h1>
+      <p class="lede">Scenarios are seeded from real closed conversations. Each one drives one
+      simulated customer session in the flywheel.</p>
+    </div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Intent</th>
+            <th>Story</th>
+            <th>Source conversation</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="scenariosBody">
+          <tr><td colspan="5" class="card-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>Simulated conversations share the same schema and audit chain as real traffic — only <code>is_simulated</code> differs.</footer>
+
+<script>
+// const API_BASE=(location.protocol==="file:"||!location.origin)?"http://localhost:8000":location.origin;
+const API_BASE = window.API_BASE || "http://localhost:8000";
+
+// ── view routing ──────────────────────────────────────────────────────────
+function showView(name) {
+  document.getElementById("versionsView").style.display  = name === "versions"  ? "" : "none";
+  document.getElementById("scenariosView").style.display = name === "scenarios" ? "" : "none";
+  document.getElementById("versionPanel").classList.toggle("open", name === "versionDetail");
+
+  document.getElementById("navVersions").classList.toggle("active",  name === "versions" || name === "versionDetail");
+  document.getElementById("navScenarios").classList.toggle("active", name === "scenarios");
+
+  if (name === "versions")   loadVersions();
+  if (name === "scenarios")  loadScenarios();
+}
+
+// ── versions table ────────────────────────────────────────────────────────
+async function loadVersions() {
+  const body = document.getElementById("versionsBody");
+  body.innerHTML = `<tr><td colspan="5" class="card-empty">Loading…</td></tr>`;
+  try {
+    const res = await fetch(`${API_BASE}/simulations/versions`);
+    if (!res.ok) throw new Error(res.statusText);
+    const versions = await res.json();
+    if (!versions.length) {
+      body.innerHTML = `<tr><td colspan="5" class="card-empty">No simulation runs yet.
+        Use the Run button above or: <code>python3 15_simulation_flywheel.py</code></td></tr>`;
+      return;
+    }
+    body.innerHTML = versions.map(v => `
+      <tr class="clickable" onclick="openVersion('${esc(v.prompt_version)}')">
+        <td class="mono">${esc(v.prompt_version)}</td>
+        <td>${v.total_runs}</td>
+        <td>${v.passed_runs}</td>
+        <td>${v.pass_rate != null ? (v.pass_rate * 100).toFixed(0) + "%" : "—"}</td>
+        <td>${fmtDate(v.finished_at)}</td>
+      </tr>`).join("");
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="5" class="card-empty">Couldn't reach API at ${API_BASE}: ${e.message}</td></tr>`;
+  }
+}
+
+// ── version detail ────────────────────────────────────────────────────────
+async function openVersion(promptVersion) {
+  document.getElementById("versionTitle").textContent = `${promptVersion} — loading…`;
+  document.getElementById("versionStats").innerHTML = "";
+  document.getElementById("versionRunsBody").innerHTML =
+    `<tr><td colspan="5" class="card-empty">Loading…</td></tr>`;
+  showView("versionDetail");
+
+  try {
+  const res = await fetch(`${API_BASE}/simulations/versions/${encodeURIComponent(promptVersion)}`);
+    if (!res.ok) throw new Error(res.statusText);
+  const data = await res.json();
+
+  document.getElementById("versionTitle").textContent =
+    `${data.prompt_version} — ${data.passed_runs}/${data.total_runs} passed`;
+
+    document.getElementById("versionStats").innerHTML = `
+      <div class="stat"><div class="num">${data.total_runs}</div><div class="lbl">Runs</div></div>
+      <div class="stat"><div class="num">${data.passed_runs}</div><div class="lbl">Passed</div></div>
+      <div class="stat"><div class="num">${data.pass_rate != null ? (data.pass_rate*100).toFixed(0)+"%" : "—"}</div><div class="lbl">Pass rate</div></div>`;
+
+    document.getElementById("versionRunsBody").innerHTML = (data.runs || []).map(r => `
+    <tr>
+        <td class="mono">${esc((r.scenario_id || "").slice(0, 8))}</td>
+        <td>${esc(r.customer_intent || "—")}</td>
+        <td class="story-cell" title="${esc(r.customer_story || "")}">${esc(r.customer_story || "—")}</td>
+        <td><span class="badge ${r.pass ? "pass" : "fail"}">${r.pass ? "pass" : "fail"}</span></td>
+        <td><a class="link" href="console_update.html?conversation_id=${encodeURIComponent(r.conversation_id || "")}">open →</a></td>
+      </tr>`).join("") || `<tr><td colspan="5" class="card-empty">No runs.</td></tr>`;
+  } catch (e) {
+    document.getElementById("versionRunsBody").innerHTML =
+      `<tr><td colspan="5" class="card-empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+// ── scenarios ─────────────────────────────────────────────────────────────
+async function loadScenarios() {
+  const body = document.getElementById("scenariosBody");
+  body.innerHTML = `<tr><td colspan="5" class="card-empty">Loading…</td></tr>`;
+  try {
+    const res = await fetch(`${API_BASE}/simulations/scenarios`);
+    if (!res.ok) throw new Error(res.statusText);
+    const rows = await res.json();
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="5" class="card-empty">No scenarios yet. Run the flywheel to generate them.</td></tr>`;
+      return;
+    }
+    body.innerHTML = rows.map(s => `
+      <tr>
+        <td class="mono">${esc((s.id || "").slice(0, 8))}</td>
+        <td>${esc(s.customer_intent || "—")}</td>
+        <td class="story-cell" title="${esc(s.customer_story || "")}">${esc(s.customer_story || "—")}</td>
+        <td class="mono">${esc((s.source_conversation_id || "—").toString().slice(0, 8))}</td>
+        <td>${fmtDate(s.created_at)}</td>
+      </tr>`).join("");
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="5" class="card-empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+// ── run trigger ───────────────────────────────────────────────────────────
+let _pollTimer = null;
+
+async function triggerRun() {
+  const n       = parseInt(document.getElementById("inputN").value, 10) || 10;
+  const version = document.getElementById("inputVersion").value.trim() || "v1";
+  const baseline = parseFloat(document.getElementById("inputBaseline").value) || 0.85;
+
+  setStatusPill("running", "⟳ Starting…");
+  document.getElementById("runBtn").disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/simulations/run`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({n, prompt_version: version, baseline}),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    setStatusPill("running", `<span class="spin">⟳</span> Running ${data.n} scenarios…`);
+    startPolling();
+  } catch (e) {
+    setStatusPill("error", "✗ " + e.message);
+    document.getElementById("runBtn").disabled = false;
+  }
+}
+
+function startPolling() {
+  clearTimeout(_pollTimer);
+  _pollTimer = setTimeout(pollStatus, 2000);
+}
+
+async function pollStatus() {
+  try {
+    const res  = await fetch(`${API_BASE}/simulations/status`);
+    const data = await res.json();
+
+    if (data.running) {
+      setStatusPill("running", `<span class="spin">⟳</span> Running…`);
+      _pollTimer = setTimeout(pollStatus, 2000);
+    } else if (data.error) {
+      setStatusPill("error", "✗ " + data.error);
+      document.getElementById("runBtn").disabled = false;
+      loadVersions();
+    } else {
+      const lr = data.last_run;
+      const label = lr
+        ? `✓ Done — ${lr.passed}/${lr.n} passed (${(lr.pass_rate * 100).toFixed(0)}%)`
+        : "✓ Done";
+      setStatusPill("done", label);
+      document.getElementById("runBtn").disabled = false;
+  loadVersions();
+}
+  } catch {
+    _pollTimer = setTimeout(pollStatus, 3000);
+  }
+}
+
+function setStatusPill(cls, html) {
+  const el = document.getElementById("simStatus");
+  el.className = "status-pill " + cls;
+  el.innerHTML = html;
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function fmtDate(s) {
+  if (!s) return "—";
+  try { return new Date(s).toLocaleString(); } catch { return String(s); }
+}
+
+// ── boot ──────────────────────────────────────────────────────────────────
+loadVersions();
+</script>
+</body>
+</html>
+

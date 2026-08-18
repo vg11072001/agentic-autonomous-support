@@ -1,0 +1,209 @@
+{
+  "articles": [
+    {
+      "doc_id": "policy_returns_v2",
+      "title": "Return Policy",
+      "category": "returns",
+      "path": "kb_docs/policy_returns_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_refund_v2",
+      "title": "Refund Policy",
+      "category": "refunds",
+      "path": "kb_docs/policy_refund_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_shipping_v2",
+      "title": "Shipping & Delivery Policy",
+      "category": "shipping",
+      "path": "kb_docs/policy_shipping_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_account_security_v2",
+      "title": "Account Security & Fraud Review Policy",
+      "category": "fraud",
+      "path": "kb_docs/policy_account_security_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_account_email_update_v2",
+      "title": "Account Email Update Policy",
+      "category": "account",
+      "path": "kb_docs/policy_account_email_update_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_order_cancellation_v2",
+      "title": "Order Cancellation Policy",
+      "category": "cancellation",
+      "path": "kb_docs/policy_order_cancellation_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_order_changes_v2",
+      "title": "Order Changes & Request Routing Policy",
+      "category": "order_changes",
+      "path": "kb_docs/policy_order_changes_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_payment_v2",
+      "title": "Payment Policy",
+      "category": "payment",
+      "path": "kb_docs/policy_payment_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_damaged_wrong_item_v2",
+      "title": "Damaged & Wrong Item Policy",
+      "category": "damaged_item",
+      "path": "kb_docs/policy_damaged_wrong_item_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "policy_support_escalation_v2",
+      "title": "Customer Support Escalation Policy",
+      "category": "escalation",
+      "path": "kb_docs/policy_support_escalation_v2.md",
+      "version": 2,
+      "kind": "policy"
+    },
+    {
+      "doc_id": "kb_retrieval_citation_guide_v2",
+      "title": "Knowledge Base Retrieval & Citation Guide",
+      "category": "retrieval",
+      "path": "kb_docs/kb_retrieval_citation_guide.md",
+      "version": 2,
+      "kind": "guide"
+    },
+    {
+      "doc_id": "policy_returns_v1",
+      "title": "Return Policy",
+      "category": "returns",
+      "path": "kb_docs/policy_returns_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_refunds_v1",
+      "title": "Refund Policy",
+      "category": "refunds",
+      "path": "kb_docs/policy_refunds_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_shipping_v1",
+      "title": "Shipping & Delivery Policy",
+      "category": "shipping",
+      "path": "kb_docs/policy_shipping_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_account_security_v1",
+      "title": "Account Security & Fraud Review Policy",
+      "category": "fraud",
+      "path": "kb_docs/policy_account_security_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_cancellation_v1",
+      "title": "Order Cancellation Policy",
+      "category": "cancellation",
+      "path": "kb_docs/policy_cancellation_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_payment_faq_v1",
+      "title": "Payment FAQ",
+      "category": "payment",
+      "path": "kb_docs/policy_payment_faq_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_damaged_item_v1",
+      "title": "Damaged Item Policy",
+      "category": "damaged_item",
+      "path": "kb_docs/policy_damaged_item_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_intent_routing_v1",
+      "title": "Customer Support Intent Routing Policy",
+      "category": "retrieval_and_routing",
+      "path": "kb_docs/policy_intent_routing_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_return_followup_damaged_item_v1",
+      "title": "Return Follow-Up for Damaged Items",
+      "category": "returns",
+      "path": "kb_docs/article_return_followup_damaged_item_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_account_email_change_issue_v1",
+      "title": "Changing an Email Address When the Current Email Has Problems",
+      "category": "account",
+      "path": "kb_docs/article_account_email_change_issue_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_shipping_delay_and_leave_request_v1",
+      "title": "Repeated Shipping Delays and Customer Leave Requests",
+      "category": "shipping",
+      "path": "kb_docs/article_shipping_delay_and_leave_request_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_failed_payment_issue_v1",
+      "title": "Customer Payment Issue and Failed Payment Handling",
+      "category": "payment",
+      "path": "kb_docs/article_failed_payment_issue_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "policy_multi_order_refund_v1",
+      "title": "Multi-Order Refund Request Policy",
+      "category": "refunds",
+      "path": "kb_docs/policy_multi_order_refund_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_mistaken_order_refund_v1",
+      "title": "Refund Request for an Order Placed by Mistake",
+      "category": "cancellation",
+      "path": "kb_docs/article_mistaken_order_refund_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "article_cancel_better_price_v1",
+      "title": "Cancellation Because a Better Price Was Found Elsewhere",
+      "category": "cancellation",
+      "path": "kb_docs/article_cancel_better_price_v1.md",
+      "version": 1
+    },
+    {
+      "doc_id": "kb_faq_retrieval_context_v1",
+      "title": "FAQ Retrieval Context and Demotion Rules",
+      "category": "knowledge_base",
+      "path": "kb_docs/kb_faq_retrieval_context_v1.md",
+      "version": 1
+    }
+  ],
+  "intentional_gap_topics": [
+    "loyalty_points_expiration",
+    "gift_card_balance_transfer",
+    "price_match_guarantee"
+  ]
+}

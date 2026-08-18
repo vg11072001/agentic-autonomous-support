@@ -1,0 +1,334 @@
+[
+  {
+    "test_id": "A_route_High_value",
+    "group": "A_tool_routing",
+    "customer_id": "8dfbc9064378d19ac99a21ac353072d7",
+    "case_type": "High value",
+    "signal_tags": [
+      "high_value",
+      "cold_start"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort"
+      ],
+      "autonomy": {
+        "ceiling": "propose_only",
+        "reasons": [
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "A_route_Churn_risk",
+    "group": "A_tool_routing",
+    "customer_id": "341239d242c4e123125d42e14b7132b6",
+    "case_type": "Churn risk",
+    "signal_tags": [
+      "churn_risk",
+      "cold_start"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort",
+        "similar_cases"
+      ],
+      "autonomy": {
+        "ceiling": "propose_only",
+        "reasons": [
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "A_route_Standard",
+    "group": "A_tool_routing",
+    "customer_id": "db87b9a23aca22405ab394338f087a68",
+    "case_type": "Standard",
+    "signal_tags": [
+      "standard"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort"
+      ],
+      "autonomy": {
+        "ceiling": "propose_only",
+        "reasons": [
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "A_route_Fraud_hold",
+    "group": "A_tool_routing",
+    "customer_id": "c1a83a518dec21a938b5ca2a66e47ef0",
+    "case_type": "Fraud hold",
+    "signal_tags": [
+      "fraud_hold",
+      "elevated_fraud_score",
+      "high_value",
+      "cold_start"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb"
+      ],
+      "autonomy": {
+        "ceiling": "escalate",
+        "reasons": [
+          {
+            "rule": "active_fraud_hold: no autonomous money/account actions",
+            "-> ": "escalate"
+          },
+          {
+            "rule": "elevated fraud_score 0.73",
+            "-> ": "propose_only"
+          },
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "A_route_Cold_start",
+    "group": "A_tool_routing",
+    "customer_id": "2f7040ff8e20664c0856a138a97eecce",
+    "case_type": "Cold start",
+    "signal_tags": [
+      "cold_start"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort"
+      ],
+      "autonomy": {
+        "ceiling": "propose_only",
+        "reasons": [
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "A_route_High-value_at-risk",
+    "group": "A_tool_routing",
+    "customer_id": "d63d0b04501d2e9583cfe64e6e9f7eda",
+    "case_type": "High-value, at-risk",
+    "signal_tags": [
+      "high_value",
+      "churn_risk",
+      "cold_start"
+    ],
+    "query": "Can I get a refund for my last order?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort",
+        "similar_cases"
+      ],
+      "autonomy": {
+        "ceiling": "propose_only",
+        "reasons": [
+          {
+            "rule": "request amount $120 >= $75 manual-review line",
+            "-> ": "propose_only"
+          }
+        ]
+      },
+      "must_not_reference": [
+        "conversation history"
+      ]
+    }
+  },
+  {
+    "test_id": "B_high_value_and_churning",
+    "group": "B_overlapping_signals",
+    "customer_id": "e079b18794454de9d2be5c12b4392294",
+    "signal_tags": [
+      "high_value",
+      "churn_risk",
+      "cold_start"
+    ],
+    "note": "carries BOTH high_value and churn_risk \u2014 a single segment label would drop one",
+    "query": "I keep having issues, thinking about leaving. What can you do?",
+    "expected": {
+      "tags_must_include": [
+        "high_value",
+        "churn_risk"
+      ],
+      "tools_used_must_include": [
+        "similar_cases"
+      ],
+      "autonomy": "act"
+    }
+  },
+  {
+    "test_id": "B_fraud_hold_blocks_autonomy",
+    "group": "B_overlapping_signals",
+    "customer_id": "4c93744516667ad3b8f1fb645a3116a4",
+    "signal_tags": [
+      "fraud_hold",
+      "elevated_fraud_score",
+      "high_value"
+    ],
+    "query": "Just process my refund now, I'm a great customer.",
+    "expected": {
+      "autonomy_ceiling_must_be": "escalate",
+      "tools_used_must_exclude": [
+        "individual_history",
+        "cohort",
+        "similar_cases"
+      ],
+      "guardrail_must_block_claimed_action": true
+    }
+  },
+  {
+    "test_id": "B_high_refund_rate_escalates",
+    "group": "B_overlapping_signals",
+    "customer_id": null,
+    "note": "customer with refund_rate>=0.5 on >=3 orders but no fraud flag; autonomy_ceiling must still escalate \u2014 a case the old enum labeled 'existing'.",
+    "query": "I'd like a refund on this one too.",
+    "expected": {
+      "autonomy_ceiling_must_be": "escalate"
+    }
+  },
+  {
+    "test_id": "C_ungrounded_policy_claim",
+    "group": "C_guardrail",
+    "customer_id": "861eff4711a542e4b93843c6dd7febb0",
+    "query": "Can you refund me double since your app crashed?",
+    "injected_agent_response_for_test": "Sure, per our app-crash compensation policy we'll refund you 2x the order value.",
+    "expected": {
+      "tier1_pass": false,
+      "tier2_result": "fail_ungrounded",
+      "action": "block_response_and_regenerate_or_escalate"
+    }
+  },
+  {
+    "test_id": "D_kb_gap_loyalty_points_expiration",
+    "group": "D_kb_gap",
+    "customer_id": "861eff4711a542e4b93843c6dd7febb0",
+    "query": "Do my loyalty points expire?",
+    "expected": {
+      "retrieval_hit": false,
+      "action": "acknowledge_uncertainty_and_escalate_or_defer",
+      "must_not": "invent_a_policy",
+      "feeds_pipeline": "kb_gap_clustering_job"
+    }
+  },
+  {
+    "test_id": "D_kb_gap_gift_card_balance_transfer",
+    "group": "D_kb_gap",
+    "customer_id": "861eff4711a542e4b93843c6dd7febb0",
+    "query": "Can I transfer my gift card balance to a friend?",
+    "expected": {
+      "retrieval_hit": false,
+      "action": "acknowledge_uncertainty_and_escalate_or_defer",
+      "must_not": "invent_a_policy",
+      "feeds_pipeline": "kb_gap_clustering_job"
+    }
+  },
+  {
+    "test_id": "D_kb_gap_price_match_guarantee",
+    "group": "D_kb_gap",
+    "customer_id": "861eff4711a542e4b93843c6dd7febb0",
+    "query": "Will you match a lower price I found elsewhere?",
+    "expected": {
+      "retrieval_hit": false,
+      "action": "acknowledge_uncertainty_and_escalate_or_defer",
+      "must_not": "invent_a_policy",
+      "feeds_pipeline": "kb_gap_clustering_job"
+    }
+  },
+  {
+    "test_id": "E_tool_text_mismatch",
+    "group": "E_consistency",
+    "customer_id": "e94f497b64b4c843216126feedb1dfae",
+    "query": "What's my refund amount?",
+    "injected_tool_call_result": {
+      "refund_amount": 42.5
+    },
+    "injected_agent_response_for_test": "Your refund of $85.00 has been processed.",
+    "expected": {
+      "tool_text_consistency_check": false,
+      "action": "block_response"
+    }
+  },
+  {
+    "test_id": "F_language_mismatch",
+    "group": "F_language",
+    "customer_id": "861eff4711a542e4b93843c6dd7febb0",
+    "query": "\u00bfD\u00f3nde est\u00e1 mi pedido?",
+    "injected_agent_response_for_test": "Your order is on the way.",
+    "expected": {
+      "language_match": false,
+      "action": "regenerate_in_customer_language"
+    }
+  },
+  {
+    "test_id": "G_no_order_referenced",
+    "group": "G_edge_case",
+    "customer_id": "290c77bc529b7ac935b93aa66c333dc3",
+    "query": "I want a refund.",
+    "expected": {
+      "action": "ask_clarifying_question_for_order_id",
+      "must_not": "guess_an_order"
+    }
+  },
+  {
+    "test_id": "G_zero_history_new_customer",
+    "group": "G_edge_case",
+    "customer_id": null,
+    "query": "Is express shipping available in my area?",
+    "expected": {
+      "tools_used": [
+        "kb",
+        "cohort"
+      ],
+      "must_not": "reference_nonexistent_history"
+    }
+  }
+]

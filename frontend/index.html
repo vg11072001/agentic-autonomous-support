@@ -1,0 +1,52 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora Support — agent memory on CockroachDB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#10233F;--paper:#FAFAF8;--saffron:#F2A93B;--forest:#1F8A55;--slate:#5B6472;--line:#E7E4DC}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  .bar{background:var(--ink);color:#fff;padding:13px 26px;font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem}
+  .bar span{color:var(--saffron)}
+  main{flex:1;max-width:860px;margin:0 auto;padding:56px 24px;display:flex;flex-direction:column;gap:22px}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:2.3rem;line-height:1.15;margin:0}
+  h1 em{font-style:normal;color:var(--forest)}
+  .lede{font-size:1.08rem;color:var(--slate);line-height:1.6;margin:0;max-width:60ch}
+  .cta{display:inline-flex;align-items:center;gap:8px;background:var(--saffron);color:var(--ink);font-weight:600;text-decoration:none;padding:12px 20px;border-radius:10px;width:fit-content}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:8px}
+  .card{border:1px solid var(--line);background:#fff;border-radius:12px;padding:16px}
+  .card h3{margin:0 0 6px;font-size:.95rem}
+  .card p{margin:0;color:var(--slate);font-size:.85rem;line-height:1.5}
+  footer{color:var(--slate);font-size:.8rem;padding:20px 26px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="bar">Auro<span>ra</span> Support</div>
+<main>
+  <h1>Autonomous support with <em>agent memory on CockroachDB</em>.</h1>
+  <p class="lede">More abstract/enterprise-sounding — memory and context persisting seamlessly across turns, agents, and time. 
+    Good if you want something that sounds like a platform/product rather than a single feature.
+    One cluster holds the whole memory layer — synthesized case state, vector
+  retrieval, cross-customer similar cases, the guardrail verdict cache, versioned skills, and a
+  tamper-evident audit chain.</p>
+  <a class="cta" href="console.html">Open the live Memory Inspector →</a>
+  <a class="cta" href="simulations.html" style="background:transparent;border:1.5px solid var(--ink);color:var(--ink)">View simulation runs →</a>
+  <a class="cta" href="escalations.html" style="background:transparent;border:1.5px solid var(--ink);color:var(--ink)">Escalations →</a>
+  <div class="grid">
+    <div class="card"><h3>Signal-routed memory</h3><p>Signals (not a segment) pick which tools fire: KB, this customer's history, similar resolved cases, cohort.</p></div>
+    <div class="card"><h3>Input + output firewall</h3><p>A semantic firewall screens the request; a two-tier guardrail checks the reply and red-teams autonomous money actions.</p></div>
+    <div class="card"><h3>Skills as memory</h3><p>The planner selects a versioned resolution playbook; new ones are drafted from recurring escalations and human-reviewed.</p></div>
+    <div class="card"><h3>Tamper-evident audit</h3><p>Every decision is hash-chained in CockroachDB; altering any record breaks the chain, and the console verifies it live.</p></div>
+    <div class="card"><h3>Simulation flywheel</h3><p>Generate realistic cohort scenarios, run them through the live agent graph, and compare across prompt, model, and flow versions to catch regressions before deployment.</p></div>
+    <div class="card"><h3>Escalations</h3><p>Escalated cases are reviewed by human agents for resolution. Also highlighted knowledge bases gaps.</p></div>
+  </div>
+</main>
+<footer>Built on CockroachDB (memory + vectors + audit) and AWS Bedrock. The Memory Inspector is the primary demo surface.</footer>
+</body>
+</html>

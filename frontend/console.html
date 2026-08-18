@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Agent — Live Memory Inspector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10233F; --paper:#FAFAF8; --saffron:#F2A93B; --forest:#1F8A55;
+    --coral:#E85D4E; --slate:#5B6472; --line:#E7E4DC; --white:#fff;
+    --panel:#0E1B30; --pline:#22324D; --radius:10px;
+    --fd:'Fraunces',serif; --fb:'Inter',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+  .bar{display:flex;align-items:center;gap:14px;background:var(--ink);color:#fff;padding:11px 20px;flex:0 0 auto}
+  .logo{font-family:var(--fd);font-weight:600;font-size:1.2rem}.logo span{color:var(--saffron)}
+  .tag{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#AEB8C7;border:1px solid #2C3B54;border-radius:100px;padding:3px 9px}
+  .health{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .hp{display:flex;align-items:center;gap:6px;font-size:.74rem;color:#C4CDDC;background:#152743;border:1px solid #263754;border-radius:100px;padding:4px 10px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--slate)}
+  .dot.ok{background:var(--forest)} .dot.bad{background:var(--coral)} .dot.warn{background:var(--saffron)}
+  .grid{flex:1 1 auto;display:grid;grid-template-columns:290px 1fr 1fr;min-height:0}
+  .col{min-height:0;overflow-y:auto;padding:16px}
+  .col.customers{border-right:1px solid var(--line);background:#fff}
+  .col.chat{border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .col.inspect{background:var(--panel);color:#D6DEEA}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr;grid-template-rows:auto auto auto}.col{max-height:60vh}}
+  h3{font-family:var(--fd);font-weight:600;font-size:1rem;margin:0 0 3px}
+  .sub{color:var(--slate);font-size:.76rem;margin:0 0 12px}
+  .inspect h3{color:#fff}.inspect .sub{color:#8593A8}
+  .search{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:.84rem;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+  .chip{font-size:.68rem;border:1px solid var(--line);border-radius:100px;padding:3px 9px;cursor:pointer;background:#fff;color:var(--slate)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .toggle{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--slate);margin-bottom:10px;cursor:pointer;user-select:none}
+  .sect{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin:10px 0 6px;font-weight:600}
+  .who{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;cursor:pointer;margin-bottom:6px;transition:border-color .12s}
+  .who:hover{border-color:var(--slate)} .who.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+  .who b{display:block;font-size:.82rem;line-height:1.2}
+  .who small{color:var(--slate);font-size:.68rem;font-family:var(--fm)}
+  .ctype{display:inline-block;font-size:.6rem;font-weight:600;letter-spacing:.03em;padding:2px 7px;border-radius:100px;margin-top:4px;background:#EEF1F5;color:#3A4A63}
+  .ctype.fraud{background:#FBE7E4;color:#9A2C1F}.ctype.hv{background:#FDEFD9;color:#8A5A11}
+  .ctype.churn{background:#F4E9FB;color:#6B2E8F}.ctype.cold{background:#E7EEF6;color:#274B73}
+  .histpill{float:right;font-size:.62rem;font-family:var(--fm);color:var(--forest);background:#E2F2E9;border-radius:100px;padding:1px 7px}
+  .loadmore{width:100%;border:1px dashed var(--line);background:#fff;border-radius:8px;padding:7px;font-size:.76rem;color:var(--slate);cursor:pointer}
+  .tabs{display:flex;gap:6px;margin-bottom:10px;flex:0 0 auto}
+  .tab{font-size:.78rem;border:1px solid var(--line);background:#fff;border-radius:100px;padding:5px 12px;cursor:pointer;color:var(--slate)}
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .msgs{flex:1;display:flex;flex-direction:column;gap:10px;margin:6px 0 12px;overflow-y:auto}
+  .m{max-width:84%;padding:9px 12px;border-radius:12px;font-size:.88rem;line-height:1.5}
+  .m.customer{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:3px}
+  .m.agent{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:3px}
+  .m.system{align-self:center;background:#FDEFD9;color:#8A5A11;font-size:.78rem;border-radius:100px;padding:5px 13px;text-align:center}
+  .m .src{display:block;margin-top:5px;font-family:var(--fm);font-size:.64rem;color:var(--slate)}
+  .why{align-self:flex-start;max-width:84%;background:#FBE7E4;border:1px solid #F1C9C2;border-radius:12px;padding:9px 12px;font-size:.8rem}
+  .why b{color:#9A2C1F}
+  .errbox{align-self:stretch;background:#2A1512;border:1px solid #7A2C22;color:#F2B8B0;border-radius:10px;padding:10px 12px;font-size:.8rem;font-family:var(--fm)}
+  .composer{display:flex;gap:8px;flex:0 0 auto}
+  .composer input{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:.88rem}
+  .composer button{background:var(--saffron);border:none;border-radius:8px;padding:0 16px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .composer button:disabled{opacity:.5;cursor:default}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;flex:0 0 auto}
+  .quick button{background:#fff;border:1px solid var(--line);border-radius:100px;padding:4px 10px;font-size:.72rem;color:var(--slate);cursor:pointer}
+  /* past chats */
+  .pastlist{display:flex;flex-direction:column;gap:7px;overflow-y:auto}
+  .pc{border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer;background:#fff}
+  .pc:hover{border-color:var(--slate)}
+  .pc .r1{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;color:var(--slate)}
+  .pc .sm{font-size:.84rem;margin-top:3px;color:var(--ink)}
+  .badge{font-size:.6rem;font-weight:600;padding:1px 7px;border-radius:100px}
+  .badge.esc{background:#FBE7E4;color:#9A2C1F}.badge.res{background:#E2F2E9;color:#155F3B}.badge.open{background:#FDEFD9;color:#8A5A11}
+  .back{font-size:.74rem;color:var(--slate);cursor:pointer;margin-bottom:8px;display:inline-block}
+  /* past chat scroll fix #tag_latest_chn */
+  #pastChatWrap{flex-direction:column;min-height:0}
+  #pastMsgs{max-height:calc(100vh - 280px);min-height:80px;overflow-y:auto!important}
+  /* inspector */
+  .card{background:#132340;border:1px solid var(--pline);border-radius:10px;padding:12px 13px;margin-bottom:11px}
+  .card h4{margin:0 0 9px;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;color:#7E8DA6;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pill{font-family:var(--fm);font-size:.66rem;background:#1C2E4D;border:1px solid #2B3F60;border-radius:5px;padding:2px 7px;color:#AFC0DC;white-space:nowrap}
+  .pill.crdb{color:#8FE3C4;border-color:#1F6E56;background:#0F2A22}
+  .pill.read{color:#8FB4E6;border-color:#2B4A72;background:#10233F}
+  .pill.write{color:#F6C877;border-color:#7A5A1B;background:#2A2110}
+  .pill.rw{color:#D8B3F0;border-color:#5A3A7A;background:#231033}
+  .pill.aws{color:#F6C877;border-color:#7A5A1B;background:#2A2110}
+  .pill.off{color:#F2A99F;border-color:#7A2C22;background:#2A1512}
+  .pill.tag{color:#F0D8A0;border-color:#6A5320;background:#241E10}
+  .pill.hit{color:#8FE3C4} .pill.miss{color:#F2A99F}
+  .ceil{font-weight:700;font-family:var(--fm);font-size:.8rem}
+  .ceil.act{color:#8FE3C4}.ceil.propose_only{color:#F6C877}.ceil.escalate{color:#F2A99F}
+  .flow{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .flow .n{font-family:var(--fm);font-size:.68rem;background:#1C2E4D;border:1px solid #2B3F60;border-radius:6px;padding:3px 8px;color:#C7D3E6}
+  .flow .n.esc{color:#F2A99F;border-color:#7A2C22}.flow .n.resp{color:#8FE3C4;border-color:#1F6E56}
+  .flow .a{color:#5E6F8C}
+  .kv{font-family:var(--fm);font-size:.72rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin:0;color:#C7D3E6}
+  .rows{display:flex;flex-direction:column;gap:5px}
+  .row{display:flex;justify-content:space-between;gap:10px;font-size:.76rem;background:#0E1D37;border:1px solid #1E2E49;border-radius:6px;padding:5px 8px}
+  .row .d{font-family:var(--fm);color:#8FB4E6}
+  .none{color:#7E8DA6;font-size:.76rem;font-style:italic}
+  .verdict{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600}
+  .verdict.ok{color:#8FE3C4} .verdict.esc{color:#F2A99F}
+  .llm{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;background:#0E1D37;border:1px solid #1E2E49;border-radius:6px;padding:5px 8px;font-family:var(--fm)}
+  .llm .bad{color:#F2A99F}
+  .note{font-size:.7rem;color:#8593A8;margin-top:6px}
+  /* condensed canvas */
+  .canvas{background:#0F1F3A;border:1px solid #2B3F60;border-radius:10px;padding:11px 13px;margin-bottom:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .canvas .cseg{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#C7D3E6}
+  .canvas .arw{color:#5E6F8C}
+  .canvas .k{font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:#7E8DA6}
+  /* drill-down walk */
+  .wn{border-left:2px solid #2B3F60;padding:0 0 10px 12px;margin-left:6px;position:relative}
+  .wn:before{content:"";position:absolute;left:-6px;top:3px;width:10px;height:10px;border-radius:50%;background:#2B3F60}
+  .wn.fail:before{background:var(--coral)} .wn.fail{border-left-color:#7A2C22}
+  .wn .wh{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.78rem;color:#C7D3E6;font-weight:600}
+  .wn .wh .chev{color:#7E8DA6;font-size:.7rem;transition:transform .12s}
+  .wn.open .wh .chev{transform:rotate(90deg)}
+  .wn .wb{display:none;margin-top:6px} .wn.open .wb{display:block}
+  .reasons{list-style:none;padding:0;margin:6px 0 0}
+  .reasons li{font-size:.72rem;color:#C7D3E6;padding:3px 0;border-bottom:1px solid #1A2A44}
+  .empty{color:#7E8DA6;font-size:.8rem;font-style:italic;padding:16px 0;text-align:center}
+  .console{flex:0 0 auto;border-top:1px solid var(--pline);background:#0A1626;color:#B9C6DA;max-height:150px;display:flex;flex-direction:column}
+  .console .ch{display:flex;align-items:center;gap:10px;padding:7px 16px;border-bottom:1px solid #16263f;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#7E8DA6}
+  .console .ch b{color:#C7D3E6;letter-spacing:0;text-transform:none;font-size:.8rem}
+  .console .ch .clear{margin-left:auto;cursor:pointer;color:#7E8DA6;border:1px solid #22324D;border-radius:6px;padding:2px 8px}
+  .log{overflow-y:auto;padding:6px 16px;font-family:var(--fm);font-size:.72rem;line-height:1.65}
+  .le{display:flex;gap:9px}.le .t{color:#5E6F8C;flex:0 0 auto}.le .lv{flex:0 0 54px;text-transform:uppercase;font-size:.62rem}
+  .le.info .lv{color:#8FB4E6}.le.ok .lv{color:#8FE3C4}.le.warn .lv{color:#F6C877}.le.error .lv{color:#F2A99F}
+  .le .msg{color:#C7D3E6}.le.error .msg{color:#F2B8B0}.le .detail{color:#7E8DA6;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="logo">Auro<span>ra</span> Support</div>
+  <div class="tag">Live Memory Inspector</div>
+  <a href="simulations.html" style="font-size:.72rem;color:#AEB8C7;text-decoration:none;margin-left:4px;padding:3px 10px;border:1px solid #2C3B54;border-radius:100px" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#AEB8C7'">Simulations</a>
+  <a href="escalations.html" style="font-size:.72rem;color:#AEB8C7;text-decoration:none;padding:3px 10px;border:1px solid #2C3B54;border-radius:100px" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#AEB8C7'">Escalations</a>
+  <div class="health">
+    <span class="hp"><span class="dot" id="dbDot"></span><span id="dbTxt">db…</span></span>
+    <span class="hp"><span class="dot" id="llmDot"></span><span id="llmTxt">llm…</span></span>
+    <span class="hp" title="tamper-evident audit chain integrity"><span class="dot" id="auditDot"></span><span id="auditTxt">audit…</span></span>
+  </div>
+</div>
+
+<div class="grid">
+  <aside class="col customers">
+    <h3>Customers</h3>
+    <p class="sub">No segments — customers are grouped by <b>case type</b> derived from signals. Pick anyone; the pipeline runs live.</p>
+    <input class="search" id="search" placeholder="Search name, email, id…" aria-label="Search customers">
+    <div class="chips" id="chips"></div>
+    <label class="toggle"><input type="checkbox" id="histOnly"> only customers with prior conversations</label>
+    <div id="suggestedWrap"><div class="sect">Suggested — one per case type</div><div id="suggested"><div class="empty">loading…</div></div></div>
+    <div class="sect">All customers</div>
+    <div id="allList"><div class="empty">loading…</div></div>
+  </aside>
+
+  <section class="col chat">
+    <h3 id="chatWho">Conversation</h3>
+    <p class="sub" id="chatSub">Select a customer to begin.</p>
+    <div class="tabs" id="tabs" style="display:none">
+      <span class="tab on" data-tab="live">Live chat</span>
+      <span class="tab" data-tab="past">Past chats <span id="pastCount"></span></span>
+    </div>
+    <!-- live view -->
+    <div id="liveView" style="display:flex;flex-direction:column;flex:1;min-height:0">
+      <div class="msgs" id="msgs"><div class="empty">No messages yet.</div></div>
+      <div class="composer"><input id="input" placeholder="Type a message…" autocomplete="off" disabled aria-label="Message to the support agent"><button id="send" disabled aria-label="Send message">Send</button></div>
+      <div class="quick" id="quick"></div>
+    </div>
+    <!-- past view -->
+    <div id="pastView" style="display:none;flex:1;min-height:0;overflow-y:auto">
+      <div id="pastListWrap"><div class="pastlist" id="pastList"></div></div>
+      <div id="pastChatWrap" style="display:none">
+        <span class="back" id="pastBack">← back to past chats</span>
+        <div class="msgs" id="pastMsgs"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col inspect">
+    <h3>CockroachDB memory — this turn</h3>
+    <p class="sub">Signals, autonomy, the memory tools that fired, and the tables touched — straight from the API.</p>
+    <div id="inspector"><div class="empty">Send a live message to see the trace.</div></div>
+  </section>
+</div>
+
+<div class="console">
+  <div class="ch"><b>Console</b> · events, DB &amp; LLM calls, errors <span id="logCount"></span><span class="clear" id="clearLog">clear</span></div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const API_BASE=(location.protocol==="file:"||!location.origin)?"http://localhost:8000":location.origin;
+let backendLive=false,current=null,caseFilter="",searchTerm="",histOnly=false,offset=0;const PAGE=25;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const now=()=>new Date().toLocaleTimeString([],{hour12:false});
+
+let logN=0;
+function logEvent(level,msg,detail){logN++;const el=document.createElement("div");el.className="le "+level;
+  el.innerHTML=`<span class="t">${now()}</span><span class="lv">${level}</span><span class="msg">${esc(msg)}${detail?`<div class="detail">${esc(detail)}</div>`:""}</span>`;
+  $("#log").appendChild(el);$("#log").scrollTop=1e9;$("#logCount").textContent="· "+logN;}
+$("#clearLog").onclick=()=>{$("#log").innerHTML="";logN=0;$("#logCount").textContent="";};
+
+async function api(path,opts){const url=API_BASE+path,t=performance.now();
+  try{const r=await fetch(url,{...opts,signal:AbortSignal.timeout(30000)});const ms=Math.round(performance.now()-t);
+    if(!r.ok){const b=await r.text().catch(()=> "");logEvent("error",`${opts?.method||"GET"} ${path} → ${r.status} (${ms}ms)`,b.slice(0,300));throw new Error("HTTP "+r.status);}
+    logEvent("ok",`${opts?.method||"GET"} ${path} → 200 (${ms}ms)`);return await r.json();
+  }catch(e){const ms=Math.round(performance.now()-t);
+    if(e.name==="TimeoutError")logEvent("error",`${path} timed out (${ms}ms)`);
+    else if(!e.message?.startsWith("HTTP"))logEvent("error",`${path} failed — ${e.message}`,"Is 20_api_server running on :8000?");
+    throw e;}}
+
+async function checkHealth(){try{const h=await api("/api/health");backendLive=true;
+    $("#dbDot").className="dot "+(h.db_connected?"ok":"bad");$("#dbTxt").textContent=h.db_connected?"CockroachDB":"DB error";
+    $("#llmDot").className="dot "+(h.llm_live?"ok":"warn");$("#llmTxt").textContent=h.llm_live?("Llama "+(h.llm_model||"").split(".").pop().slice(0,16)):"LLM offline";
+    if(!h.db_connected)logEvent("error","DB not connected",h.db_error||"");
+    if(!h.llm_live)logEvent("warn","LLM offline fallback — set AWS creds + Bedrock Llama access for live model");
+  }catch(e){backendLive=false;$("#dbDot").className="dot bad";$("#dbTxt").textContent="no backend";$("#llmDot").className="dot bad";$("#llmTxt").textContent="no backend";}}
+
+// case-type color hint
+function ctClass(ct){ct=(ct||"").toLowerCase();return ct.includes("fraud")?"fraud":ct.includes("value")?"hv":ct.includes("churn")||ct.includes("risk")?"churn":ct.includes("cold")?"cold":"";}
+function renderChips(counts){const cts=Object.keys(counts||{});
+  $("#chips").innerHTML=`<span class="chip ${caseFilter===""?"on":""}" data-c="">all</span>`+
+    cts.map(c=>`<span class="chip ${caseFilter===c?"on":""}" data-c="${esc(c)}">${esc(c)} · ${counts[c]}</span>`).join("");
+  $("#chips").querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{caseFilter=ch.dataset.c;offset=0;loadCustomers(true);});}
+async function loadCaseTypes(){try{const d=await api("/api/case-types");renderChips(d.counts);}catch(e){renderChips(null);}}
+
+function whoCard(c){const hp=c.conversation_count>0?`<span class="histpill">${c.conversation_count} chats</span>`:"";
+  const meta=`${c.total_orders??0} orders · $${Math.round(c.total_spent||0)} · ${c.tenure_days??0}d`;
+  return `<button class="who" data-id="${esc(c.customer_id)}" data-name="${esc(c.name||c.customer_id)}" data-ct="${esc(c.case_type||"")}">`+
+    `${hp}<b>${esc(c.name||c.customer_id)}</b><small>${esc(meta)}</small>`+
+    `<span class="ctype ${ctClass(c.case_type)}">${esc(c.case_type||"—")}</span></button>`;}
+function wireWho(scope){scope.querySelectorAll(".who").forEach(b=>b.onclick=()=>selectCustomer(b.dataset.id,b));}
+async function loadSuggested(){try{const d=await api("/api/customers/suggested");
+    $("#suggested").innerHTML=(d.suggested||[]).map(whoCard).join("")||`<div class="none">load data first</div>`;wireWho($("#suggested"));
+  }catch(e){$("#suggested").innerHTML=`<div class="none">backend offline</div>`;}}
+async function loadCustomers(reset){if(reset)offset=0;
+  const qs=new URLSearchParams({limit:PAGE,offset});if(caseFilter)qs.set("case_type",caseFilter);if(searchTerm)qs.set("search",searchTerm);if(histOnly)qs.set("with_history","true");
+  try{const d=await api("/api/customers?"+qs);const html=(d.customers||[]).map(whoCard).join("");
+    if(reset)$("#allList").innerHTML=html||`<div class="none">no matches</div>`;else $("#allList").insertAdjacentHTML("beforeend",html);
+    wireWho($("#allList"));const old=$("#loadMoreBtn");if(old)old.remove();
+    if((d.customers||[]).length===PAGE){const b=document.createElement("button");b.id="loadMoreBtn";b.className="loadmore";b.textContent="load more";
+      b.onclick=()=>{offset+=PAGE;loadCustomers(false);b.remove();};$("#allList").appendChild(b);}
+  }catch(e){if(reset)$("#allList").innerHTML=`<div class="none">backend offline — start 20_api_server</div>`;}}
+let st;$("#search").oninput=e=>{clearTimeout(st);st=setTimeout(()=>{searchTerm=e.target.value.trim();offset=0;loadCustomers(true);},280);};
+$("#histOnly").onchange=e=>{histOnly=e.target.checked;offset=0;loadCustomers(true);};
+
+// generic prompts (no segment) — chosen to trigger different memory/tool paths
+const PROMPTS=["Can I get a refund for my last order?","Where is my package?","I want to cancel my order.","The item arrived damaged, I have photos.","I keep having issues — thinking of leaving."];
+function selectCustomer(id,btn){
+  current={id,name:btn?.dataset.name||id,ct:btn?.dataset.ct||""};
+  document.querySelectorAll(".who").forEach(w=>w.classList.remove("on"));btn?.classList.add("on");
+  $("#chatWho").textContent=current.name;
+  $("#chatSub").innerHTML=`<span class="ctype ${ctClass(current.ct)}">${esc(current.ct||"—")}</span> · <span style="font-family:var(--fm);font-size:.72rem">${esc(id)}</span>`;
+  $("#tabs").style.display="flex";switchTab("live");
+  $("#msgs").innerHTML=`<div class="m system">New live chat — the agent computes this customer's signal profile and routes accordingly</div>`;
+  $("#inspector").innerHTML=`<div class="empty">Send a message to see the live trace.</div>`;
+  $("#input").disabled=false;$("#send").disabled=false;$("#input").focus();
+  $("#quick").innerHTML=PROMPTS.map(s=>`<button>${esc(s)}</button>`).join("");
+  $("#quick").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("#input").value=b.textContent;send();});
+  logEvent("info",`Selected ${id} (${current.ct})`);
+  loadPastChats(id);
+}
+
+// tabs
+function switchTab(t){$("#tabs").querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
+  $("#liveView").style.display=t==="live"?"flex":"none";$("#pastView").style.display=t==="past"?"block":"none";
+  if(t==="past"){$("#pastListWrap").style.display="block";$("#pastChatWrap").style.display="none";}}
+$("#tabs").querySelectorAll(".tab").forEach(x=>x.onclick=()=>switchTab(x.dataset.tab));
+
+// past chats (old conversations + their messages)
+async function loadPastChats(cid){
+  try{const rows=await api("/api/conversations?customer_id="+encodeURIComponent(cid));
+    $("#pastCount").textContent="("+rows.length+")";
+    $("#pastList").innerHTML=rows.length?rows.map(r=>{
+      const b=r.escalated?`<span class="badge esc">escalated</span>`:(r.status==="resolved"?`<span class="badge res">resolved</span>`:`<span class="badge open">${esc(r.status||"open")}</span>`);
+      const dt=r.created_at?new Date(r.created_at).toLocaleDateString():"";
+      return `<div class="pc" data-id="${esc(r.id)}"><div class="r1"><span>${esc(dt)}</span>${b}</div><div class="sm">${esc(r.summary||"(no summary)")}</div></div>`;
+    }).join(""):`<div class="empty">No prior conversations for this customer.</div>`;
+    $("#pastList").querySelectorAll(".pc").forEach(p=>p.onclick=()=>openPastChat(p.dataset.id));
+  }catch(e){$("#pastCount").textContent="";$("#pastList").innerHTML=`<div class="none">could not load</div>`;}}
+async function openPastChat(convId){ // #tag_latest_chn flex + trace fetch
+  $("#pastListWrap").style.display="none";
+  $("#pastChatWrap").style.display="flex"; // #tag_latest_chn was "block" — flex needed for msg scroll
+  $("#pastMsgs").innerHTML=`<div class="empty">loading…</div>`;
+  $("#inspector").innerHTML=`<div class="card"><div class="none">loading trace…</div></div>`;
+  try{
+    const [msgsResult,traceResult]=await Promise.allSettled([ // #tag_latest_chn parallel fetch
+      api(`/api/conversations/${convId}/messages`),
+      api(`/api/trace/${convId}`)
+    ]);
+    const msgs=msgsResult.status==="fulfilled"?msgsResult.value:[];
+    const trace=traceResult.status==="fulfilled"?traceResult.value:null;
+    $("#pastMsgs").innerHTML=msgs.length
+      ?msgs.map(m=>`<div class="m ${m.role==='customer'?'customer':m.role==='agent'?'agent':'system'}">${esc(m.content)}</div>`).join("")
+      :`<div class="empty">no messages stored (simulated or pending)</div>`;
+    renderPastTraceInspector(trace); // #tag_latest_chn show evaluation in inspector
+  }catch(e){$("#pastMsgs").innerHTML=`<div class="none">could not load messages</div>`;
+    $("#inspector").innerHTML=`<div class="card"><div class="none">trace unavailable</div></div>`;}}
+$("#pastBack").onclick=()=>{$("#pastListWrap").style.display="block";$("#pastChatWrap").style.display="none";};
+
+function addMsg(role,text,source){const e=$("#msgs").querySelector(".empty");if(e&&role!=="system")e.remove();
+  const d=document.createElement("div");d.className="m "+role;
+  d.innerHTML=esc(text)+(source?`<span class="src">via ${source==="bedrock"?"AWS Bedrock · Llama":"offline fallback"}</span>`:"");
+  $("#msgs").appendChild(d);$("#msgs").scrollTop=1e9;}
+function addWhy(t){const d=document.createElement("div");d.className="why";d.innerHTML=`<b>Why escalated:</b> ${esc(t)}`;$("#msgs").appendChild(d);$("#msgs").scrollTop=1e9;}
+function addErr(t){const d=document.createElement("div");d.className="errbox";d.textContent="⚠ "+t;$("#msgs").appendChild(d);$("#msgs").scrollTop=1e9;}
+
+async function send(){if(!current)return;const text=$("#input").value.trim();if(!text)return;
+  $("#input").value="";$("#send").disabled=true;addMsg("customer",text);logEvent("info",`POST /api/chat — "${text.slice(0,50)}"`);
+  try{const data=await api("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customer_id:current.id,message:text})});
+    if(data.error){addErr(`${data.error.type}: ${data.error.message}`);logEvent("error",`Backend error: ${data.error.type}`,(data.error.trace||[]).join("\n"));renderInspector(data.trace||{});}
+    else{if(data.escalated){addMsg("system","Escalated to a human specialist — someone will follow up shortly.");if(data.escalation_reason)addWhy(data.escalation_reason);logEvent("warn",`Escalated (${data.trace?.guardrail?.reason||"policy"}) in ${data.trace?.timing_ms||"?"}ms`);}
+      else{addMsg("agent",data.response,data.trace?.response_source);logEvent("ok",`Responded in ${data.trace?.timing_ms||"?"}ms (${data.trace?.response_source||"?"})`);}
+      const _t=data.trace||{}; _t._reply=data.response; renderInspector(_t);}
+  }catch(e){addErr("Request failed — see Console log.");}finally{$("#send").disabled=false;$("#input").focus();
+    if(current)setTimeout(()=>loadPastChats(current.id),800);}} // #tag_latest_chn refresh past chats after reply
+$("#send").onclick=send;$("#input").addEventListener("keydown",e=>{if(e.key==="Enter")send();});
+
+function renderInspector(tr){
+  if(!tr||!tr.nodes){$("#inspector").innerHTML=`<div class="card"><h4>error</h4><div class="none">No trace. Timing ${tr?.timing_ms||"?"}ms. See Console log.</div></div>`+llmCard(tr?.llm_calls);return;}
+  const sig=tr.signals||{},r=tr.retrieval||{},plan=r.plan||{},g=tr.guardrail||{},auto=tr.autonomy||{};
+  const flow=`<div class="flow">`+tr.nodes.map((n,i)=>`${i?'<span class="a">→</span>':''}<span class="n ${n==='escalate'?'esc':n==='respond'?'resp':''}">${esc(n)}</span>`).join("")+`</div>`;
+  const tags=(sig.tags||[]).map(t=>`<span class="pill tag">${esc(t)}</span>`).join(" ")||'<span class="none">—</span>';
+  const tools=(r.tools_used||[]).map(t=>`<span class="pill crdb">${esc(t)}</span>`).join(" ")||'<span class="none">—</span>';
+  const kb=(r.kb&&r.kb.length)?`<div class="rows">`+r.kb.map(k=>`<div class="row"><span>${esc(k.title||"kb")}</span><span class="d">dist ${k.distance}</span></div>`).join("")+`</div>`:`<div class="none">no grounded KB match</div>`;
+  const listOr=(arr,fmt,empty)=>arr?(arr.length?`<div class="rows">`+arr.map(fmt).join("")+`</div>`:`<div class="none">searched, none</div>`):`<div class="none">${empty}</div>`;
+  const hist=listOr(r.history,h=>`<div class="row"><span>${esc(h.summary)}</span><span class="d">${h.distance}</span></div>`,"not pulled for this customer");
+  const sim=listOr(r.similar_cases,s=>`<div class="row"><span>${esc(s.summary)}</span><span class="d">${s.distance}</span></div>`,"not pulled this turn");
+  const coh=listOr(r.cohort,c=>`<div class="row"><span>${esc(c.resolution_type)}</span><span class="d">freq ${c.frequency}</span></div>`,"not pulled this turn");
+  const reasons=(auto.reasons||[]).map(x=>`<li>${esc(x.rule||JSON.stringify(x))} <span class="pill">${esc(x["-> "]||"")}</span></li>`).join("");
+  const verdict=g.action==="escalate"?`<div class="verdict esc">● escalate — human handoff</div>`:`<div class="verdict ok">● respond — passed</div>`;
+  const cache=g.cache_hit===true?`<span class="pill hit">cache hit</span>`:g.cache_hit===false?`<span class="pill miss">cache miss</span>`:"";
+  const srcPill=tr.response_source==="bedrock"?`<span class="pill aws">Bedrock · Llama</span>`:`<span class="pill off">offline fallback</span>`;
+  const tables=(tr.tables||[]).map(t=>`<span class="pill ${t.op==='write'?'write':t.op==='read'?'read':'rw'}" title="${esc(t.why||"")}">${esc(t.name)} · ${esc(t.op)}</span>`).join(" ");
+
+  // --- condensed resolution canvas: the whole turn in one strip ---
+  const esc2=x=>esc(x==null?"—":x);
+  const toolIcons=(r.tools_used||[]).length?(r.tools_used||[]).map(t=>esc(t.split(" ")[0])).join(" · "):"none";
+  const skill=tr.skill;  // populated when 23_skills is wired into the planner
+  const fw=tr.firewall||{},imp=tr.impact||{};
+  const fwColor=fw.verdict==="block"?"#F2A99F":fw.verdict==="review"?"#F6C877":"#8FE3C4";
+  const atStake=(imp.amount_at_stake||0)>0?`$${imp.amount_at_stake} action`:(imp.lifetime_value_at_risk?`$${Math.round(imp.lifetime_value_at_risk)} LTV`:"—");
+  const canvas=`<div class="canvas">
+    <span class="cseg"><span class="k">firewall</span> <span style="color:${fwColor};font-weight:600">${esc((fw.verdict||"—").toUpperCase())}</span></span><span class="arw">→</span>
+    <span class="cseg"><span class="k">intent</span> ${esc2((tr.case_state||{}).issue_category)}</span><span class="arw">→</span>
+    ${skill?`<span class="cseg"><span class="k">playbook</span> ${esc(skill.skill_id)} v${esc(skill.version)}</span><span class="arw">→</span>`:""}
+    <span class="cseg"><span class="k">tools</span> ${toolIcons}</span><span class="arw">→</span>
+    <span class="cseg"><span class="k">ceiling</span> <span class="ceil ${esc(auto.ceiling||"")}">${esc((auto.ceiling||"—").toUpperCase())}</span></span><span class="arw">→</span>
+    <span class="cseg"><span class="k">at stake</span> ${esc(atStake)}</span><span class="arw">→</span>
+    <span class="cseg"><span class="k">verdict</span> ${g.action==="escalate"?'<span style="color:#F2A99F">escalate</span>':'<span style="color:#8FE3C4">respond</span>'} ${srcPill}</span>
+  </div>`;
+
+  // --- drill-down root-cause walk (TencentDB-style deterministic walk down
+  //     the memory hierarchy). Auto-expands the failing link on escalation. ---
+  const failed=g.action==="escalate";
+  const kbBrief=(r.kb&&r.kb.length)?r.kb.map(k=>`${esc(k.title)} (d ${k.distance})`).join(", "):"none grounded";
+  const walk=`<div class="card"><h4>resolution drill-down ${failed?'<span class="pill miss">root-cause walk</span>':'<span class="pill">grounding trail</span>'}</h4>
+    <div class="walk">
+      ${walkNode("response", failed?"escalated — no reply sent":esc((""+(tr._reply||"see chat")).slice(0,160)), failed, failed)}
+      ${walkNode("guardrail", (g.reason_detail||g.reason||"passed")+(g.adversarial_critique?(" — critique: "+g.adversarial_critique):""), failed, failed)}
+      ${walkNode("autonomy ceiling", (auto.ceiling||"—")+": "+((auto.reasons||[]).map(x=>x.rule).join("; ")||"no restriction"), false, false)}
+      ${walkNode("case_state", "<pre class='kv'>"+esc(JSON.stringify(tr.case_state||{},null,1))+"</pre>", false, false)}
+      ${walkNode("retrieved evidence", "KB: "+kbBrief+((r.similar_cases&&r.similar_cases.length)?(" · similar cases: "+r.similar_cases.length):""), false, false)}
+      ${walkNode("signals", (sig.tags||[]).join(", ")||"—", false, false)}
+    </div>
+    <div class="note">Walk the chain from the reply down to the raw signals to see exactly why the agent said what it said${failed?" — the red node is where it broke.":"."}</div></div>`;
+
+  $("#inspector").innerHTML=canvas+`
+    <div class="card"><h4>pipeline flow <span class="pill">${tr.timing_ms||"?"}ms</span></h4>${flow}</div>
+    ${wmCard(tr.working_memory)}
+    ${fwCard(tr.firewall, tr.audit, tr.impact)}
+    <div class="card"><h4>signal profile <span class="pill crdb">from customer_profile · orders · refunds</span></h4><div class="flow">${tags}</div>
+      <div class="note">tenure ${sig.tenure_days??"?"}d · ${sig.order_count??"?"} orders · $${Math.round(sig.lifetime_value||0)} lifetime · churn ${sig.churn_risk_score??"?"} · refund_rate ${sig.refund_rate!=null?Math.round(sig.refund_rate*100)+"%":"?"}</div></div>
+    <div class="card"><h4>autonomy ceiling <span class="pill">deterministic rule, not the LLM</span></h4>
+      <div class="ceil ${esc(auto.ceiling||"")}">${esc((auto.ceiling||"—").toUpperCase())}</div>
+      <ul class="reasons">${reasons||'<li class="none">no restriction triggered</li>'}</ul></div>
+    <div class="card"><h4>memory tools that fired</h4><div class="flow">${tools}</div>${r.note?`<div class="note">${esc(r.note)}</div>`:""}
+      <div class="note" style="margin-top:8px">KB <span class="pill crdb">kb_chunks · VECTOR(384)</span></div>${kb}
+      <div class="note" style="margin-top:8px">this customer's history <span class="pill crdb">conversations</span></div>${hist}
+      <div class="note" style="margin-top:8px">similar resolved cases <span class="pill crdb">conversations</span></div>${sim}
+      <div class="note" style="margin-top:8px">cohort pattern <span class="pill crdb">cohort_resolution_patterns</span></div>${coh}</div>
+    <div class="card"><h4>case_state — synthesized memory <span class="pill crdb">case_state</span></h4><pre class="kv">${esc(JSON.stringify(tr.case_state||{},null,2))}</pre></div>
+    <div class="card"><h4>guardrail ${g.tier?`· tier ${g.tier}`:""} ${cache} ${srcPill}</h4>${verdict}
+      ${g.reason_detail?`<div class="note" style="color:#C99">${esc(g.reason_detail)}</div>`:""}
+      ${g.adversarial_critique?`<div class="note"><b style="color:#C99">critique:</b> ${esc(g.adversarial_critique)}</div>`:""}</div>
+    ${llmCard(tr.llm_calls)}
+    ${evalCard(tr.evaluation)}
+    ${draftresponseCard(tr.draft_response)}
+    ${walk}
+    <div class="card"><h4>CockroachDB tables this turn</h4><div class="flow">${tables||'<span class="none">—</span>'}</div>
+      <div class="note"><span class="pill read">read</span> <span class="pill write">write</span> <span class="pill rw">read/write</span> — hover for why</div></div>`;
+  // wire drill-down toggles
+  $("#inspector").querySelectorAll(".wn .wh").forEach(h=>h.onclick=()=>h.parentElement.classList.toggle("open"));
+}
+function walkNode(label, bodyHTML, fail, openByDefault){
+  return `<div class="wn ${fail?'fail':''} ${openByDefault?'open':''}"><div class="wh"><span class="chev">▶</span>${esc(label)}</div><div class="wb">${bodyHTML}</div></div>`;
+}
+function fwCard(fw,audit,imp){
+  fw=fw||{};imp=imp||{};
+  const v=fw.verdict||"—",vc=v==="block"?"off":v==="review"?"":"crdb";
+  const reasons=(fw.reasons||[]).map(r=>`<span class="pill">${esc(r)}</span>`).join(" ")||'<span class="none">none</span>';
+  const h=audit&&audit.record_hash?audit.record_hash.slice(0,16)+"…":"—";
+  return `<div class="card"><h4>input firewall &amp; audit <span class="pill ${vc}">${esc(v.toUpperCase())}</span></h4>
+    <div class="note"><b>category:</b> ${esc(fw.category||"—")} · <b>via:</b> ${esc(fw.source||"—")}</div>
+    <div class="flow" style="margin-top:5px">${reasons}</div>
+    <div class="note" style="margin-top:8px"><b>$ at stake:</b> ${(imp.amount_at_stake||0)>0?"$"+imp.amount_at_stake+" ("+esc(imp.action||"")+")":"—"} · <b>LTV at risk:</b> $${Math.round(imp.lifetime_value_at_risk||0)}</div>
+    <div class="note"><b>audit record:</b> <span class="pill crdb">seq ${audit?audit.seq:"—"}</span> <span class="pill">${esc(h)}</span> — hash-chained, tamper-evident</div></div>`;
+}
+function wmCard(wm){
+  if(!wm)return `<div class="card"><h4>working memory <span class="pill">L3+L2+budgeted L1/L0</span></h4><div class="none">not assembled (wire 24_working_memory)</div></div>`;
+  const p=wm.persona||{},ls=wm.latest_scenario,f=wm.budgeted_facts||[],mt=wm.meta||{};
+  const notes=(p.notes||[]).map(n=>`<div class="row"><span>note</span><span>${esc(n)}</span></div>`).join("");
+  const facts=f.map(x=>`<div class="row"><span>${esc(x.title)}</span><span class="d">d ${x.distance}</span></div>`).join("");
+  return `<div class="card"><h4>working memory <span class="pill crdb">customer_notes · conversations · kb_chunks</span> <span class="pill ${mt.hit_budget?'miss':''}">${mt.chars_used||0}/${mt.char_budget||0} chars</span></h4>
+    <div class="note"><b>L3 persona:</b> tenure ${p.tenure_days??"?"}d · ${p.order_count??"?"} orders · $${Math.round(p.lifetime_value||0)}</div>
+    ${notes?`<div class="rows" style="margin-top:5px">${notes}</div>`:""}
+    <div class="note" style="margin-top:7px"><b>L2 last interaction:</b> ${ls?esc(ls.summary)+(ls.escalated?" (escalated)":""):'<span class="none">none</span>'}</div>
+    <div class="note" style="margin-top:7px"><b>L1/L0 budgeted facts:</b> ${f.length?"":'<span class="none">none needed</span>'}</div>${facts?`<div class="rows">${facts}</div>`:""}
+    <div class="note">${mt.items||0}/${mt.max_items||"?"} items · ${mt.elapsed_ms??"?"}ms · ${mt.hit_budget?"budget reached (truncated)":"within budget"}</div></div>`;
+}
+function draftresponseCard(response){
+  if(!response)return `<div class="card"><h4>Draft Response</h4><div class="none">no draft response available</div></div>`;
+  return `<div class="card"><h4>Draft Response</h4><div class="note"><b style="color:#C99">Response:</b> ${esc(response)}</div></div>`;
+}
+function evalCard(ev){ // #tag_latest_chn 5-dimension judge card
+  if(!ev)return `<div class="card"><h4>evaluation (judge) <span class="pill">post-turn</span></h4><div class="none">not run — EVAL_ENABLED=0 or no evaluation row yet</div></div>`;
+  if(ev.error)return `<div class="card"><h4>evaluation (judge)</h4><div class="none">error: ${esc(ev.error)}</div></div>`;
+  const dims=[["retrieval_correctness","retrieval"],["response_accuracy","accuracy"],["grammar_language_ok","grammar"],["coherence_to_context","coherence"],["relevance_to_request","relevance"]];
+  const chips=dims.map(([k,l])=>{const v=ev[k];const c=v===true?"crdb":v===false?"off":"";return `<span class="pill ${c}">${esc(l)} ${v===true?"✓":v===false?"✗":"—"}</span>`;}).join(" ");
+  const meta=[ev.judge_model?`<span class="pill">${esc(ev.judge_model)}</span>`:"",ev.is_simulated?`<span class="pill tag">simulated</span>`:""].filter(Boolean).join(" ");
+  return `<div class="card"><h4>evaluation — 5-dimension judge <span class="pill crdb">evaluation_results</span> ${meta}</h4><div class="flow">${chips}</div>${ev.reasoning?`<div class="note">${esc(ev.reasoning)}</div>`:""}</div>`;
+}
+function renderPastTraceInspector(tr){ // #tag_latest_chn simplified inspector for past conversations
+  if(!tr){$("#inspector").innerHTML=`<div class="card"><div class="none">no trace data</div></div>`;return;}
+  const cs=tr.case_state;
+  const tcRows=(tr.tool_calls||[]).map(tc=>`<div class="row"><span>${esc(tc.agent_name||"?")} · <b>${esc(tc.tool_name||"?")}</b></span><span class="d">${tc.latency_ms||"?"}ms</span></div>`).join("");
+  $("#inspector").innerHTML=
+    evalCard(tr.evaluation)+
+    `<div class="card"><h4>case_state — synthesized memory <span class="pill crdb">case_state</span></h4>`+
+    (cs?`<pre class="kv">${esc(JSON.stringify(cs.state||cs,null,2))}</pre>`:`<div class="none">no case_state row</div>`)+
+    `</div>`+
+    `<div class="card"><h4>tool calls <span class="pill">${(tr.tool_calls||[]).length} recorded</span></h4>`+
+    (tcRows?`<div class="rows">${tcRows}</div>`:`<div class="none">no tool_calls rows</div>`)+
+    `</div>`;
+}
+function llmCard(calls){if(!calls||!calls.length)return `<div class="card"><h4>LLM calls (AWS Bedrock · Llama)</h4><div class="none">no model calls captured</div></div>`;
+  return `<div class="card"><h4>LLM calls — AWS Bedrock · Llama <span class="pill">${calls.length}</span></h4><div class="rows">`+
+    calls.map(c=>`<div class="llm"><span>${esc(c.tag)} · <span class="${c.source==='bedrock'?'':'bad'}">${esc((c.model||'').split('.').pop().slice(0,20)||c.source)}</span></span><span>${c.latency_ms}ms ${c.ok?'✓':'<span class="bad">✕</span>'}</span></div>`).join("")+`</div></div>`;}
+
+async function openByConvId(convId){ // #tag_latest_chn open conversation from URL param
+  logEvent("info",`Loading conversation ${convId.slice(0,8)}… from URL`);
+  switchTab("past");
+  $("#pastListWrap").style.display="none";
+  openPastChat(convId);
+}
+async function boot(){logEvent("info",`Console started — API ${API_BASE}`);await checkHealth();
+  const urlParams=new URLSearchParams(location.search); // #tag_latest_chn
+  const urlConvId=urlParams.get("conversation_id");     // #tag_latest_chn
+  if(backendLive){await loadCaseTypes();await loadSuggested();await loadCustomers(true);await checkAudit();}
+  else{$("#suggested").innerHTML=$("#allList").innerHTML=`<div class="none">Backend offline. Start:<br>uvicorn 20_api_server:app --port 8000</div>`;renderChips(null);}
+  if(urlConvId&&backendLive)openByConvId(urlConvId); // #tag_latest_chn must come after loadCustomers
+  setInterval(checkHealth,15000);}
+async function checkAudit(){try{const a=await api("/api/audit/verify");
+  $("#auditDot").className="dot "+(a.ok?"ok":"bad");
+  $("#auditTxt").textContent=a.ok?("audit ✓ "+(a.count||0)):("audit BROKEN @"+a.broken_at);
+  if(!a.ok)logEvent("error","Audit chain integrity FAILED",a.why+" at seq "+a.broken_at);
+}catch(e){$("#auditDot").className="dot";$("#auditTxt").textContent="audit —";}}
+boot();
+</script>
+</body>
+</html>

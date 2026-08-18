@@ -1,0 +1,871 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escalations &amp; KB Gaps — Aurora Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── shared tokens (matches console_update + simulations) ── */
+:root{
+  --ink:#10233F; --paper:#FAFAF8; --saffron:#F2A93B; --forest:#1F8A55;
+  --coral:#E85D4E; --rust:#C0432E; --slate:#5B6472; --line:#E7E4DC; --white:#fff;
+  --panel:#0E1B30; --pline:#22324D; --radius:10px;
+  --fd:'Fraunces',serif; --fb:'Inter',system-ui,sans-serif;
+  --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--fb);font-size:13px;background:var(--paper);color:var(--ink);
+     -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
+     overflow:hidden;height:100vh}
+
+/* ── bar (simulations pattern) ── */
+.bar{background:var(--ink);color:#fff;padding:11px 22px;display:flex;align-items:center;
+     gap:16px;flex-wrap:wrap;flex-shrink:0}
+.bar-brand{font-family:var(--fd);font-weight:600;font-size:1.2rem;white-space:nowrap}
+.bar-brand span{color:var(--saffron)}
+.bar-tag{font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:#AEB8C7;
+         border:1px solid #2C3B54;border-radius:100px;padding:3px 9px}
+.bar-nav{display:flex;gap:2px;align-items:center}
+.bar-nav a{color:#fff;text-decoration:none;opacity:.65;font-size:.8rem;font-weight:500;
+           padding:4px 10px;border-radius:6px;transition:opacity .15s,background .15s}
+.bar-nav a:hover{opacity:1;background:rgba(255,255,255,.07)}
+.bar-nav a.active{opacity:1;color:var(--saffron);background:rgba(242,169,59,.12)}
+.bar-right{display:flex;gap:8px;align-items:center;margin-left:auto}
+.hp{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#C4CDDC;
+    background:#152743;border:1px solid #263754;border-radius:100px;padding:3px 10px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--slate)}
+.dot.ok{background:var(--forest)}.dot.bad{background:var(--coral)}.dot.warn{background:var(--saffron)}
+
+/* ── metrics strip (simulations .stat pattern) ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+         padding:14px 22px;border-bottom:1px solid var(--line);flex-shrink:0}
+.stat{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+      padding:11px 14px;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.stat-lbl{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--slate)}
+.stat-num{font-family:var(--fd);font-size:1.6rem;font-weight:600;line-height:1.1;
+          font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat-sub{font-size:.72rem;color:var(--slate)}
+.stat-split{display:flex;gap:12px;align-items:center;margin-top:3px}
+.stat-split>div{display:flex;flex-direction:column}
+.stat-split small{font-size:.62rem;color:var(--slate)}
+.stat-split span{font-family:var(--fd);font-size:1.25rem;font-weight:600}
+.stat-split span.warn{color:var(--saffron)}
+.sdiv{width:1px;height:28px;background:var(--line);flex-shrink:0}
+.pbar-rows{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.pbar-row{display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--slate)}
+.pbar-lbl{width:36px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;transition:width .3s}
+.pbar-n{width:18px;text-align:right;font-variant-numeric:tabular-nums}
+.sparkbar{display:flex;align-items:flex-end;gap:2px;height:40px;margin-top:6px}
+.sbar{flex:1;border-radius:2px 2px 0 0;background:var(--slate);opacity:.35;
+      min-width:3px;cursor:default;transition:opacity .15s}
+.sbar.latest{background:var(--ink);opacity:.75}
+.sbar:hover{opacity:1}
+
+/* ── tab bar (saffron active underline) ── */
+.tab-bar{display:flex;background:var(--white);border-bottom:2px solid var(--line);
+         padding:0 22px;flex-shrink:0}
+.tab{padding:9px 18px;font-size:.82rem;font-weight:600;font-family:var(--fb);border:none;
+     background:none;cursor:pointer;color:var(--slate);border-bottom:2px solid transparent;
+     margin-bottom:-2px;transition:color .15s,border-color .15s}
+.tab.active{color:var(--ink);border-bottom-color:var(--saffron)}
+.tab:hover:not(.active){color:var(--ink)}
+
+/* ── main panels ── */
+.main-panel{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.main-panel.hidden{display:none!important}
+
+/* ── cases tab layout ── */
+.cases-layout{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* sidebar */
+.cases-sidebar{width:316px;flex-shrink:0;border-right:1px solid var(--line);
+               background:var(--white);display:flex;flex-direction:column;overflow:hidden}
+.filter-row{padding:10px;display:flex;flex-direction:column;gap:6px;
+            border-bottom:1px solid var(--line);flex-shrink:0}
+.filter-row input,.filter-row select{
+  width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:7px;
+  font-family:var(--fb);font-size:.8rem;color:var(--ink);background:var(--paper);outline:none}
+.filter-row input:focus,.filter-row select:focus{
+  outline:2px solid var(--saffron);border-color:transparent}
+.filter-count{font-size:.64rem;color:var(--slate);padding:5px 10px 2px;
+              font-family:var(--fm);flex-shrink:0}
+.case-list{flex:1;overflow-y:auto;min-height:0}
+
+/* case items — card-list style like console .who */
+.case-item{padding:10px 12px;border-bottom:1px solid var(--line);
+           cursor:pointer;border-left:3px solid transparent;
+           display:flex;flex-direction:column;gap:4px;transition:background .1s}
+.case-item:hover{background:var(--paper)}
+.case-item.selected{background:#FDF7EC;border-left-color:var(--saffron)}
+.case-item.ct-fraud{border-left-color:var(--coral)}
+.case-item.ct-highrisk{border-left-color:var(--saffron)}
+.case-item.ct-churn{border-left-color:#8B2EA0}
+.case-item.ct-highval{border-left-color:var(--forest)}
+.case-item.ct-cold{border-left-color:#2B5BA0}
+.case-item.ct-std{border-left-color:var(--line)}
+.ci-top{display:flex;align-items:center;gap:6px}
+.ci-name{font-weight:600;font-size:.82rem;flex:1;white-space:nowrap;
+         overflow:hidden;text-overflow:ellipsis}
+.rev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rev-dot.done{background:var(--forest)}
+.rev-dot.pend{background:var(--saffron)}
+.ci-reason{font-size:.72rem;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.t-ago{font-size:.64rem;color:var(--slate);font-family:var(--fm)}
+
+/* detail panel */
+.case-detail{flex:1;overflow:hidden;display:flex;flex-direction:column;
+             min-height:0;background:var(--paper)}
+.detail-empty{display:flex;flex-direction:column;align-items:center;
+              justify-content:center;flex:1;color:var(--slate);gap:10px;min-height:0}
+.detail-empty em{font-size:2.2rem;opacity:.2;font-style:normal}
+.detail-empty p{font-size:.88rem}
+/* flex:1 + min-height:0 so it fills the parent without overflow escaping */
+.detail-body{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+.detail-hdr{padding:11px 16px;border-bottom:1px solid var(--line);background:var(--white);
+            flex-shrink:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.detail-hdr h3{font-family:var(--fd);font-size:1rem;font-weight:600}
+.hid{font-size:.7rem;color:var(--slate);font-family:var(--fm)}
+.detail-split{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* messages — exact console .m style */
+.msgs-wrap{flex:1;overflow-y:auto;padding:14px 16px;
+           display:flex;flex-direction:column;gap:9px;min-height:0}
+.m{max-width:84%;padding:9px 12px;border-radius:12px;font-size:.86rem;line-height:1.55;word-break:break-word}
+.m.customer{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:3px}
+.m.agent{align-self:flex-start;background:var(--white);border:1px solid var(--line);border-bottom-left-radius:3px}
+.m.system{align-self:center;background:#FDEFD9;color:#8A5A11;font-size:.74rem;
+           border-radius:100px;padding:5px 14px;text-align:center;max-width:80%}
+
+/* note panel — dark, matches console inspector */
+.note-panel{width:252px;flex-shrink:0;background:var(--panel);color:#C4CDDC;
+            display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.np-hd{padding:10px 14px;font-size:.6rem;font-weight:600;text-transform:uppercase;
+       letter-spacing:.09em;color:#7E8DA6;border-bottom:1px solid var(--pline);flex-shrink:0}
+.note-form{padding:10px 14px;display:flex;flex-direction:column;gap:8px;
+           flex-shrink:0;border-bottom:1px solid var(--pline)}
+.note-form label{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#7E8DA6}
+.note-form select,.note-form textarea,.note-form input[type=text]{
+  width:100%;padding:6px 9px;border:1px solid var(--pline);border-radius:6px;
+  background:#152743;color:#E2E8F0;font-size:.82rem;font-family:var(--fb);outline:none}
+.note-form select:focus,.note-form textarea:focus,.note-form input[type=text]:focus{
+  border-color:var(--saffron)}
+.note-form textarea{resize:vertical;min-height:54px}
+.btn-save{padding:7px 14px;background:var(--saffron);color:var(--ink);border:none;
+          border-radius:7px;font-size:.8rem;font-weight:700;font-family:var(--fb);
+          cursor:pointer;width:100%;transition:opacity .15s}
+.btn-save:hover{opacity:.85}
+.btn-save:disabled{opacity:.45;cursor:default}
+.prev-notes-hd{padding:8px 14px;font-size:.6rem;font-weight:600;text-transform:uppercase;
+               letter-spacing:.09em;color:#7E8DA6;flex-shrink:0}
+.prev-notes{flex:1;overflow-y:auto;padding:0 14px 10px;display:flex;flex-direction:column;gap:6px;min-height:0}
+.prev-note{padding:8px 10px;background:#132340;border:1px solid var(--pline);
+           border-radius:8px;font-size:.74rem;display:flex;flex-direction:column;gap:3px}
+.pn-top{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.pn-text{color:#8593A8;font-size:.72rem;line-height:1.4;font-style:italic}
+.pn-meta{font-size:.62rem;color:#5E6F8C;font-family:var(--fm)}
+
+/* ── KB Gaps tab ── */
+.gaps-layout{flex:1;overflow-y:auto;padding:22px 24px;
+             display:flex;flex-direction:column;gap:18px}
+.gaps-top{display:flex;justify-content:space-between;align-items:flex-start;
+          flex-wrap:wrap;gap:12px}
+.gaps-top h2{font-family:var(--fd);font-size:1.25rem;font-weight:600;margin:0}
+.gaps-top p{font-size:.84rem;color:var(--slate);margin-top:4px;max-width:60ch;line-height:1.5}
+.gaps-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+             border-radius:100px;font-size:.78rem;font-weight:600;font-family:var(--fb)}
+.status-pill.idle{background:#F4F2EC;color:var(--slate)}
+.status-pill.running{background:#FDF1DC;color:#9C6B12}
+.status-pill.ok{background:#E7F5EC;color:var(--forest)}
+.status-pill.error{background:#FBEAE6;color:var(--rust)}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gaps-section-hd{font-size:.7rem;font-weight:600;text-transform:uppercase;
+                  letter-spacing:.06em;color:var(--slate);
+                  padding-bottom:8px;border-bottom:1px solid var(--line)}
+.gaps-section-hd.ok {color:var(--forest);border-color:#C4E8D1}
+.gaps-section-hd.err{color:var(--rust);border-color:#EEC6BC;opacity:.8}
+.dc-status{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600;padding:4px 0}
+.dc-status.ok {color:var(--forest)}
+.dc-status.err{color:var(--slate)}
+
+/* KB draft cards — simulations .card pattern */
+.draft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.draft-card{background:var(--white);border:1px solid var(--line);border-radius:12px;
+            overflow:hidden;display:flex;flex-direction:column}
+.dc-head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.dc-head h4{font-size:.84rem;font-weight:600;flex:1;color:var(--ink)}
+.dc-cluster{font-size:.68rem;color:var(--slate);font-family:var(--fm)}
+.dc-content{padding:12px 14px;font-size:.82rem;color:var(--slate);line-height:1.6;
+            flex:1;max-height:108px;overflow:hidden;position:relative}
+.dc-content.expanded{max-height:none;overflow:visible}
+.dc-content::after{content:'';position:absolute;bottom:0;left:0;right:0;height:28px;
+                   background:linear-gradient(transparent,var(--white))}
+.dc-content.expanded::after{display:none}
+.dc-toggle{padding:5px 14px;border-top:1px solid var(--line);font-size:.74rem;
+           color:var(--forest);cursor:pointer;text-align:center;user-select:none;font-weight:500}
+.dc-actions{padding:10px 14px;display:flex;gap:8px;border-top:1px solid var(--line)}
+.btn-approve{flex:1;padding:6px 0;background:var(--forest);color:#fff;border:none;
+             border-radius:7px;font-size:.78rem;font-weight:600;font-family:var(--fb);
+             cursor:pointer;transition:opacity .15s}
+.btn-approve:hover{opacity:.85}
+.btn-approve:disabled{opacity:.45;cursor:default}
+.btn-reject{flex:1;padding:6px 0;background:none;color:var(--rust);border:1px solid #E5B3AB;
+            border-radius:7px;font-size:.78rem;font-weight:600;font-family:var(--fb);
+            cursor:pointer;transition:background .15s}
+.btn-reject:hover{background:#FBEAE6}
+.btn-reject:disabled{opacity:.45;cursor:default}
+
+/* primary / detect button */
+.btn-primary{padding:7px 18px;border-radius:8px;border:none;font-family:var(--fb);
+             font-weight:600;font-size:.84rem;cursor:pointer;transition:opacity .15s;
+             background:var(--ink);color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── chips and badges (console .ctype + simulations .badge) ── */
+.ctype{display:inline-flex;align-items:center;font-size:.6rem;font-weight:600;
+       letter-spacing:.03em;padding:2px 8px;border-radius:100px;
+       background:#EEF1F5;color:#3A4A63}
+.ctype.fraud   {background:#FBE7E4;color:#9A2C1F}
+.ctype.highrisk{background:#FDEFD9;color:#8A5A11}
+.ctype.churn   {background:#F4E9FB;color:#6B2E8F}
+.ctype.highval {background:#E2F2E9;color:#155F3B}
+.ctype.cold    {background:#E7EEF6;color:#274B73}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;
+       border-radius:100px;font-size:.64rem;font-weight:600}
+/* platform */
+.badge.chat   {background:#E5EDF7;color:#0550AE}
+.badge.call   {background:#E7F5EC;color:var(--forest)}
+.badge.email  {background:#FDEFD9;color:#8A5A11}
+.badge.social {background:#F4E9FB;color:#6B2E8F}
+.badge.instore{background:#E7EEF6;color:#274B73}
+.badge.unk    {background:#F4F2EC;color:var(--slate)}
+/* outcome */
+.badge.resolved   {background:#E7F5EC;color:var(--forest)}
+.badge.unresolved {background:#FBEAE6;color:var(--rust)}
+.badge.pending    {background:#FDF1DC;color:#9C6B12}
+.badge.transferred{background:#EEF1F5;color:var(--slate)}
+
+/* utils */
+.sect{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);
+      font-weight:600;margin:4px 0 2px}
+.loading{padding:24px;text-align:center;color:var(--slate);font-size:.84rem}
+.empty  {padding:24px;text-align:center;color:var(--slate);font-size:.84rem;font-style:italic}
+
+/* ── console panel (exact match to console_update.html) ── */
+.console{flex:0 0 auto;border-top:1px solid var(--pline);background:#0A1626;
+         color:#B9C6DA;height:130px;display:flex;flex-direction:column;flex-shrink:0}
+.console .ch{display:flex;align-items:center;gap:10px;padding:5px 16px;
+             border-bottom:1px solid #16263f;font-size:.7rem;letter-spacing:.06em;
+             text-transform:uppercase;color:#7E8DA6;flex-shrink:0}
+.console .ch b{color:#C7D3E6;letter-spacing:0;text-transform:none;font-size:.78rem}
+.console .ch .cln{font-size:.62rem;color:#5E6F8C}
+.console .ch .clr{margin-left:auto;cursor:pointer;color:#7E8DA6;
+                  border:1px solid #22324D;border-radius:6px;padding:2px 8px;font-size:.7rem}
+.log{overflow-y:auto;padding:4px 16px;font-family:var(--fm);font-size:.7rem;line-height:1.65;flex:1}
+.le{display:flex;gap:9px}
+.le .t{color:#5E6F8C;flex:0 0 auto}
+.le .lv{flex:0 0 52px;text-transform:uppercase;font-size:.6rem;padding-top:1px}
+.le.info .lv{color:#8FB4E6}.le.ok .lv{color:#8FE3C4}
+.le.warn .lv{color:#F6C877}.le.error .lv{color:#F2A99F}
+.le .msg{color:#C7D3E6;word-break:break-word}
+.le.error .msg{color:#F2B8B0}
+.le .det{color:#7E8DA6;white-space:pre-wrap;font-size:.64rem}
+</style>
+</head>
+<body>
+
+<!-- ── bar ── -->
+<div class="bar">
+  <div class="bar-brand">Auro<span>ra</span> Support</div>
+  <div class="bar-tag">Escalations &amp; KB Gaps</div>
+  <div class="bar-nav">
+    <a href="console.html">Console</a>
+    <a href="simulations.html">Simulations</a>
+    <a href="escalations.html" class="active">Escalations</a>
+  </div>
+  <div class="bar-right">
+    <span class="hp" id="healthBadge"><span class="dot" id="hDot"></span><span id="hTxt">connecting…</span></span>
+  </div>
+</div>
+
+<!-- ── metrics ── -->
+<div class="metrics">
+  <div class="stat">
+    <div class="stat-lbl">Total escalated</div>
+    <div class="stat-num" id="mTotal">—</div>
+    <div class="stat-sub" id="mWeek">— this week</div>
+  </div>
+  <div class="stat">
+    <div class="stat-lbl">Review status</div>
+    <div class="stat-split">
+      <div><span id="mReviewed">—</span><small>reviewed</small></div>
+      <div class="sdiv"></div>
+      <div><span id="mUnreviewed" class="warn">—</span><small>pending</small></div>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="stat-lbl">Platform (from notes)</div>
+    <div id="mPlatforms" class="pbar-rows"><span class="stat-sub">no notes yet</span></div>
+  </div>
+  <div class="stat">
+    <div class="stat-lbl">Weekly trend (8 w)</div>
+    <div id="mTrend" class="sparkbar"></div>
+  </div>
+</div>
+
+<!-- ── tabs ── -->
+<div class="tab-bar">
+  <button class="tab active" id="btn-cases" onclick="switchTab('cases')">Escalated Cases</button>
+  <button class="tab"         id="btn-gaps"  onclick="switchTab('gaps')">KB Gap Analysis</button>
+</div>
+
+<!-- ════ Cases panel ════ -->
+<div id="panel-cases" class="main-panel">
+  <div class="cases-layout">
+
+    <!-- sidebar -->
+    <div class="cases-sidebar">
+      <div class="filter-row">
+        <input type="text" id="fSearch" placeholder="Search customer name or ID…" oninput="applyFilters()">
+        <select id="fPlatform" onchange="applyFilters()">
+          <option value="">All platforms</option>
+          <option value="chat">Chat</option>
+          <option value="call">Call</option>
+          <option value="email">Email</option>
+          <option value="social_media">Social media</option>
+          <option value="in_store">In-store</option>
+        </select>
+        <select id="fReview" onchange="applyFilters()">
+          <option value="">All review states</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="unreviewed">Pending review</option>
+        </select>
+        <select id="fType" onchange="applyFilters()">
+          <option value="">All case types</option>
+          <option value="Fraud hold">Fraud hold</option>
+          <option value="High-value, at-risk">High-value, at-risk</option>
+          <option value="Churn risk">Churn risk</option>
+          <option value="High value">High value</option>
+          <option value="Cold start">Cold start</option>
+          <option value="Standard">Standard</option>
+        </select>
+      </div>
+      <div class="filter-count" id="caseCount"></div>
+      <div id="caseList" class="case-list">
+        <div class="loading">Loading escalations…</div>
+      </div>
+    </div>
+
+    <!-- detail -->
+    <div class="case-detail" id="caseDetail">
+      <div class="detail-empty">
+        <em>⌁</em>
+        <p>Select an escalated case to review</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ KB Gaps panel ════ -->
+<div id="panel-gaps" class="main-panel hidden">
+  <div class="gaps-layout">
+    <div class="gaps-top">
+      <div>
+        <h2>Knowledge Base Gap Analysis</h2>
+        <p>Cluster escalated conversations to find topics the KB doesn't cover. Each draft requires human approval before publishing to the live knowledge base.</p>
+      </div>
+      <div class="gaps-actions">
+        <span class="status-pill idle" id="detectStatus"></span>
+        <button class="btn-primary" id="detectBtn" onclick="detectGaps()">▶ Run Detection</button>
+      </div>
+    </div>
+    <div id="draftGrid">
+      <div class="loading">Loading drafts…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── console panel ── -->
+<div class="console">
+  <div class="ch">
+    <b>Console</b>&nbsp;·&nbsp;API calls &amp; errors
+    <span class="cln" id="logCount"></span>
+    <span class="clr" id="clearLog">clear</span>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:8000";
+let allCases = [];
+let selectedId = null;
+let detectTimer = null;
+let _logN = 0;
+
+function logEvent(level, msg, detail) {
+  _logN++;
+  const el = document.createElement("div");
+  el.className = "le " + level;
+  const t = new Date().toLocaleTimeString([], {hour12:false});
+  el.innerHTML = `<span class="t">${t}</span><span class="lv">${level}</span>`
+    + `<span class="msg">${esc(msg)}${detail ? `<div class="det">${esc(detail)}</div>` : ""}</span>`;
+  const log = document.getElementById("log");
+  log.appendChild(el);
+  log.scrollTop = 1e9;
+  document.getElementById("logCount").textContent = "· " + _logN;
+}
+document.getElementById("clearLog").onclick = () => {
+  document.getElementById("log").innerHTML = "";
+  _logN = 0;
+  document.getElementById("logCount").textContent = "";
+};
+
+async function api(path, opts = {}) {
+  const method = opts.method || "GET";
+  const t0 = performance.now();
+  try {
+    const r = await fetch(API_BASE + path, {headers:{"Content-Type":"application/json"}, ...opts});
+    const ms = Math.round(performance.now() - t0);
+    if (!r.ok) {
+      const body = await r.text().catch(() => "");
+      logEvent("error", `${method} ${path} → ${r.status} ${r.statusText} (${ms}ms)`, body.slice(0,400));
+      throw new Error(r.status + " " + r.statusText);
+    }
+    logEvent("ok", `${method} ${path} → 200 (${ms}ms)`);
+    return r.json();
+  } catch(e) {
+    const ms = Math.round(performance.now() - t0);
+    if (!e.message.match(/^\d{3}/))
+      logEvent("error", `${method} ${path} failed — ${e.message} (${ms}ms)`,
+               "Is 20_api_server running on :8000?");
+    throw e;
+  }
+}
+
+function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function timeAgo(d) {
+  if(!d) return "";
+  const s = Math.floor((Date.now() - new Date(d)) / 1000);
+  if(s < 60)   return `${s}s ago`;
+  if(s < 3600) return `${Math.floor(s/60)}m ago`;
+  if(s < 86400)return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+
+// ── chip helpers ──
+const PLAT_CLS = {chat:"chat",call:"call",email:"email",social_media:"social",in_store:"instore"};
+const PLAT_LBL = {chat:"Chat",call:"Call",email:"Email",social_media:"Social",in_store:"In-store"};
+const OUT_CLS  = {resolved:"resolved",unresolved:"unresolved",pending:"pending",transferred:"transferred"};
+const CT_CLS   = {"Fraud hold":"fraud","High-value, at-risk":"highrisk",
+                  "Churn risk":"churn","High value":"highval","Cold start":"cold"};
+const CT_ITEM  = {"Fraud hold":"ct-fraud","High-value, at-risk":"ct-highrisk",
+                  "Churn risk":"ct-churn","High value":"ct-highval",
+                  "Cold start":"ct-cold","Standard":"ct-std"};
+
+function platChip(p)  {
+  const cls = PLAT_CLS[p]||"unk";
+  return p ? `<span class="badge ${cls}">${esc(PLAT_LBL[p]||p)}</span>` : "";
+}
+function outChip(o)  { return o ? `<span class="badge ${OUT_CLS[o]||"unk"}">${esc(o)}</span>` : ""; }
+function ctChip(ct)  {
+  const cls = CT_CLS[ct]||"";
+  return ct ? `<span class="ctype ${cls}">${esc(ct)}</span>` : "";
+}
+
+// ── metrics ──
+async function loadMetrics() {
+  try {
+    const m = await api("/api/escalations/metrics");
+    document.getElementById("mTotal").textContent = m.total ?? "—";
+    const wk = m.this_week ?? 0, lw = m.last_week ?? 0;
+    const arr = wk > lw ? "↑" : wk < lw ? "↓" : "→";
+    document.getElementById("mWeek").textContent = `${arr} ${wk} this week`;
+
+    document.getElementById("mReviewed").textContent = m.reviewed ?? "—";
+    const un = document.getElementById("mUnreviewed");
+    un.textContent = m.unreviewed ?? "—";
+    un.className = m.unreviewed > 0 ? "warn" : "";
+
+    const plats = m.platforms || [];
+    const maxN = Math.max(...plats.map(p=>p.n), 1);
+    const PC = {chat:"#0550AE",call:"#1F8A55",email:"#8A5A11",social_media:"#6B2E8F",in_store:"#274B73"};
+    document.getElementById("mPlatforms").innerHTML = plats.length
+      ? plats.slice(0,4).map(p=>`
+          <div class="pbar-row">
+            <span class="pbar-lbl">${esc(PLAT_LBL[p.platform]||p.platform||"Unk")}</span>
+            <div class="pbar-track"><div class="pbar-fill" style="width:${Math.round(p.n/maxN*100)}%;background:${PC[p.platform]||"#5B6472"}"></div></div>
+            <span class="pbar-n">${p.n}</span>
+          </div>`).join("")
+      : `<span class="stat-sub">no notes recorded yet</span>`;
+
+    const trend = m.trend || [];
+    const maxT = Math.max(...trend.map(t=>t.escalations), 1);
+    document.getElementById("mTrend").innerHTML = trend.length
+      ? trend.map((t,i) => {
+          const pct = Math.max(Math.round(t.escalations/maxT*100), 6);
+          const last = i === trend.length-1;
+          return `<div class="sbar${last?" latest":""}" style="height:${pct}%"
+                       title="${(t.week||"").slice(0,10)}: ${t.escalations}"></div>`;
+        }).join("")
+      : `<span class="stat-sub">no data</span>`;
+  } catch(e) {
+    logEvent("error", `metrics failed — ${e.message}`);
+  }
+}
+
+// ── case list ──
+async function loadCases() {
+  try {
+    const data = await api("/api/escalations?limit=200");
+    logEvent("info", `Escalations: ${data.length} row(s) loaded`);
+    allCases = data;
+    applyFilters();
+  } catch(e) {
+    document.getElementById("caseList").innerHTML =
+      `<div class="empty">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+function applyFilters() {
+  const q  = (document.getElementById("fSearch").value   || "").toLowerCase();
+  const pf = document.getElementById("fPlatform").value;
+  const rv = document.getElementById("fReview").value;
+  const ct = document.getElementById("fType").value;
+  const filtered = allCases.filter(c => {
+    if(q && ![(c.customer_name||""),(c.customer_id||"")].some(v=>v.toLowerCase().includes(q))) return false;
+    if(pf && c.platform !== pf) return false;
+    if(rv==="reviewed"   && !c.platform) return false;
+    if(rv==="unreviewed" &&  c.platform) return false;
+    if(ct && c.case_type !== ct) return false;
+    return true;
+  });
+  const cc = document.getElementById("caseCount");
+  cc.textContent = `${filtered.length} of ${allCases.length} escalations`;
+  renderCaseList(filtered);
+}
+
+function renderCaseList(cases) {
+  const el = document.getElementById("caseList");
+  if(!cases.length) { el.innerHTML=`<div class="empty">No cases match the current filters</div>`; return; }
+  el.innerHTML = cases.map(c => {
+    const name   = c.customer_name || (c.customer_id||"").slice(0,10) || "Unknown";
+    const reason = (c.escalation_reason||"reason not recorded").replace(/^Escalated:\s*/i,"");
+    const reviewed = !!c.platform;
+    const itemCls = CT_ITEM[c.case_type]||"ct-std";
+    return `<div class="case-item ${itemCls}${selectedId===c.conversation_id?" selected":""}"
+                 data-id="${esc(c.conversation_id)}" onclick="selectCase(this.dataset.id)">
+      <div class="ci-top">
+        <span class="ci-name">${esc(name)}</span>
+        <span class="rev-dot ${reviewed?"done":"pend"}" title="${reviewed?"reviewed":"awaiting review"}"></span>
+      </div>
+      <div class="ci-reason">${esc(reason)}</div>
+      <div class="ci-meta">
+        ${ctChip(c.case_type)}
+        ${reviewed ? platChip(c.platform) : ""}
+        ${reviewed ? outChip(c.outcome)   : ""}
+        <span class="t-ago">${timeAgo(c.created_at)}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── case detail ──
+async function selectCase(convId) {
+  selectedId = convId;
+  applyFilters();
+  const det = document.getElementById("caseDetail");
+  det.innerHTML = `<div class="loading">Loading conversation…</div>`;
+  try {
+    const [msgs, notes] = await Promise.all([
+      api(`/api/conversations/${convId}/messages`),
+      api(`/api/escalations/${convId}/notes`),
+    ]);
+    const c = allCases.find(x => x.conversation_id === convId) || {};
+    renderDetail(c, msgs, notes);
+  } catch(e) {
+    det.innerHTML = `<div class="detail-empty"><p>Failed to load: ${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderDetail(c, msgs, notes) {
+  const name = c.customer_name || (c.customer_id||"").slice(0,10) || "Unknown";
+  const msgsHtml = msgs.length
+    ? msgs.map(m=>`<div class="m ${esc(m.role)}">${esc(m.content)}</div>`).join("")
+    : `<div class="empty">no messages stored</div>`;
+
+  document.getElementById("caseDetail").innerHTML = `
+    <div class="detail-body">
+      <div class="detail-hdr">
+        <h3>${esc(name)}</h3>
+        <span class="hid">${esc((c.conversation_id||"").slice(0,8))}…</span>
+        ${ctChip(c.case_type)}
+        ${c.platform ? platChip(c.platform) : ""}
+        ${c.outcome  ? outChip(c.outcome)   : ""}
+      </div>
+      <div class="detail-split">
+        <div class="msgs-wrap" id="msgArea">${msgsHtml}</div>
+        <div class="note-panel">
+          <div class="np-hd">Resolution note</div>
+          <div class="note-form">
+            <label>Platform used</label>
+            <select id="nPlatform">
+              <option value="chat">Chat</option>
+              <option value="call">Call</option>
+              <option value="email">Email</option>
+              <option value="social_media">Social media</option>
+              <option value="in_store">In-store / physical</option>
+              <option value="unknown">Unknown</option>
+            </select>
+            <label>Outcome</label>
+            <select id="nOutcome">
+              <option value="resolved">Resolved</option>
+              <option value="pending">Pending</option>
+              <option value="transferred">Transferred</option>
+              <option value="unresolved">Unresolved</option>
+            </select>
+            <label>Notes</label>
+            <textarea id="nText"
+              placeholder="Describe what happened, why it escalated, any follow-up needed…"></textarea>
+            <label>Your name (optional)</label>
+            <input type="text" id="nReviewer" placeholder="e.g. Jane M.">
+            <button class="btn-save" id="saveBtn"
+              data-id="${esc(c.conversation_id)}" onclick="submitNote(this.dataset.id)">Save note</button>
+          </div>
+          <div class="prev-notes-hd">Previous notes (${notes.length})</div>
+          <div class="prev-notes" id="prevNotes">${renderNotes(notes)}</div>
+        </div>
+      </div>
+    </div>`;
+  const ma = document.getElementById("msgArea");
+  if(ma) ma.scrollTop = ma.scrollHeight;
+  if(c.platform) document.getElementById("nPlatform").value = c.platform;
+  if(c.outcome)  document.getElementById("nOutcome").value  = c.outcome;
+}
+
+function renderNotes(notes) {
+  if(!notes.length) return `<div style="font-size:.72rem;color:#5E6F8C;padding:4px 0">No notes yet</div>`;
+  return notes.map(n=>`
+    <div class="prev-note">
+      <div class="pn-top">
+        ${platChip(n.platform)}${outChip(n.outcome)}
+        ${n.reviewer ? `<span style="font-size:.62rem;color:#5E6F8C">${esc(n.reviewer)}</span>` : ""}
+      </div>
+      ${n.human_notes ? `<div class="pn-text">${esc(n.human_notes)}</div>` : ""}
+      <div class="pn-meta">${timeAgo(n.created_at)}</div>
+    </div>`).join("");
+}
+
+async function submitNote(convId) {
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true; btn.textContent = "Saving…";
+  try {
+    await api(`/api/escalations/${convId}/note`, {
+      method:"POST",
+      body: JSON.stringify({
+        platform:    document.getElementById("nPlatform").value,
+        outcome:     document.getElementById("nOutcome").value,
+        human_notes: document.getElementById("nText").value,
+        reviewer:    document.getElementById("nReviewer").value,
+      })
+    });
+    btn.textContent = "Saved ✓";
+    setTimeout(()=>{ btn.textContent="Save note"; btn.disabled=false; }, 2000);
+    await Promise.all([loadCases(), loadMetrics()]);
+    const notes = await api(`/api/escalations/${convId}/notes`);
+    const pn = document.getElementById("prevNotes");
+    if(pn) pn.innerHTML = renderNotes(notes);
+    const ph = pn?.previousElementSibling;
+    if(ph) ph.textContent = `Previous notes (${notes.length})`;
+  } catch(e) {
+    btn.textContent = "Error — retry"; btn.disabled = false;
+  }
+}
+
+// ── tab switching ──
+function switchTab(name) {
+  ["cases","gaps"].forEach(t => {
+    document.getElementById(`panel-${t}`).classList.toggle("hidden", t!==name);
+    document.getElementById(`btn-${t}`).classList.toggle("active", t===name);
+  });
+  if(name==="gaps") loadGaps();
+}
+
+// ── KB gaps ──
+async function loadGaps() {
+  const grid = document.getElementById("draftGrid");
+  grid.innerHTML = `<div class="loading">Loading drafts…</div>`;
+  try {
+    const [pending, approved, rejected] = await Promise.all([
+      api("/api/kb-gaps?status=pending_review"),
+      api("/api/kb-gaps?status=approved").catch(() => []),
+      api("/api/kb-gaps?status=rejected").catch(()  => []),
+    ]);
+
+    let html = "";
+
+    if (pending.length) {
+      html += `<div class="gaps-section-hd">Pending review (${pending.length})</div>
+               <div class="draft-grid" style="margin-bottom:20px">
+                 ${pending.map(d => renderDraftCard(d)).join("")}
+               </div>`;
+    }
+    if (approved.length) {
+      html += `<div class="gaps-section-hd ok">Published to KB (${approved.length})</div>
+               <div class="draft-grid" style="margin-bottom:20px;opacity:.72">
+                 ${approved.map(d => renderDraftCard(d, "approved")).join("")}
+               </div>`;
+    }
+    if (rejected.length) {
+      html += `<div class="gaps-section-hd err">Rejected (${rejected.length})</div>
+               <div class="draft-grid" style="opacity:.55">
+                 ${rejected.map(d => renderDraftCard(d, "rejected")).join("")}
+               </div>`;
+    }
+    if (!html) {
+      html = `<div class="empty">No KB gap drafts yet — run detection to cluster escalated conversations into draft articles.</div>`;
+    }
+    grid.innerHTML = html;
+  } catch(e) {
+    grid.innerHTML = `<div class="empty">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderDraftCard(d, statusOverride) {
+  const status = statusOverride || d.status || "pending_review";
+  const n   = d.escalation_count ?? "?";
+  const cid = esc(d.source_cluster_id || "—");
+  const id  = esc(d.id);
+  const by  = d.reviewer ? ` · by ${esc(d.reviewer)}` : "";
+
+  let actions = "";
+  if (status === "pending_review") {
+    actions = `<button class="btn-approve" data-id="${id}" onclick="approveGap(this.dataset.id)">✓ Approve &amp; publish</button>
+               <button class="btn-reject"  data-id="${id}" onclick="rejectGap(this.dataset.id)">✗ Reject</button>`;
+  } else if (status === "approved") {
+    actions = `<span class="dc-status ok">✓ Published to KB${by}</span>`;
+  } else {
+    actions = `<span class="dc-status err">✗ Rejected${by}</span>`;
+  }
+
+  return `
+    <div class="draft-card" id="dc-${id}">
+      <div class="dc-head">
+        <h4>${n} escalation${n===1?"":"s"} clustered</h4>
+        <span class="dc-cluster">${cid}</span>
+      </div>
+      <div class="dc-content" id="dcc-${id}">${esc(d.draft_content||"(no draft content)")}</div>
+      <div class="dc-toggle" data-id="${id}" onclick="toggleDraft(this.dataset.id)">▾ expand draft</div>
+      <div class="dc-actions">${actions}</div>
+    </div>`;
+}
+
+function toggleDraft(id) {
+  const el  = document.getElementById(`dcc-${id}`);
+  const btn = el.nextElementSibling;
+  el.classList.toggle("expanded");
+  btn.textContent = el.classList.contains("expanded") ? "▴ collapse" : "▾ expand draft";
+}
+
+async function approveGap(id) {
+  const card = document.getElementById(`dc-${id}`);
+  if (card) card.querySelectorAll("button").forEach(b => b.disabled = true);
+  try {
+    await api(`/api/kb-gaps/${id}/approve`, {method:"POST"});
+    logEvent("ok", `Draft ${String(id).slice(0,8)}… approved — published to KB`);
+    await loadGaps();   // refresh all three buckets
+  } catch(e) {
+    if (card) card.querySelectorAll("button").forEach(b => b.disabled = false);
+    logEvent("error", `Approve failed — ${e.message}`);
+  }
+}
+
+async function rejectGap(id) {
+  const card = document.getElementById(`dc-${id}`);
+  if (card) card.querySelectorAll("button").forEach(b => b.disabled = true);
+  try {
+    await api(`/api/kb-gaps/${id}/reject`, {method:"POST"});
+    logEvent("ok", `Draft ${String(id).slice(0,8)}… rejected`);
+    await loadGaps();   // refresh all three buckets
+  } catch(e) {
+    if (card) card.querySelectorAll("button").forEach(b => b.disabled = false);
+    logEvent("error", `Reject failed — ${e.message}`);
+  }
+}
+
+async function detectGaps() {
+  const btn = document.getElementById("detectBtn");
+  const st  = document.getElementById("detectStatus");
+  btn.disabled = true;
+  st.className="status-pill running";
+  st.innerHTML=`<span class="spin">⟳</span> Running…`;
+  try {
+    await api("/api/kb-gaps/detect", {method:"POST"});
+  } catch(e) {
+    if(!e.message.includes("409")) {
+      st.className="status-pill error"; st.textContent=`✗ ${e.message}`;
+      btn.disabled=false; return;
+    }
+  }
+  pollDetect();
+}
+
+function pollDetect() {
+  if(detectTimer) clearInterval(detectTimer);
+  detectTimer = setInterval(async () => {
+    try {
+      const s = await api("/api/kb-gaps/status");
+      const btn=document.getElementById("detectBtn"), st=document.getElementById("detectStatus");
+      if(s.running){ st.innerHTML=`<span class="spin">⟳</span> Running…`; return; }
+      clearInterval(detectTimer);
+      if(s.error){
+        st.className="status-pill error"; st.textContent=`✗ ${s.error.slice(0,60)}`;
+        logEvent("error", "KB gap detection failed", s.error);
+      } else {
+        st.className="status-pill ok"; st.textContent="✓ Completed";
+        loadGaps();
+      }
+      btn.disabled=false;
+    } catch(e){ clearInterval(detectTimer); }
+  }, 2500);
+}
+
+// ── health ──
+async function checkHealth() {
+  const dot=document.getElementById("hDot"), txt=document.getElementById("hTxt");
+  try {
+    const h = await api("/api/health");
+    const ok = h.db_connected && h.llm_live;
+    dot.className = `dot ${ok?"ok":"bad"}`;
+    txt.textContent = ok ? h.llm_model : "degraded";
+    if (!h.db_connected) logEvent("error", "DB not connected", h.db_error||"");
+    if (!h.llm_live)     logEvent("warn",  "LLM offline — set AWS creds + Bedrock access");
+  } catch(e) {
+    dot.className="dot bad"; txt.textContent="offline";
+  }
+}
+
+async function boot() {
+  logEvent("info", `Escalations booting — API ${API_BASE}`);
+  await checkHealth();
+  await Promise.all([loadMetrics(), loadCases()]);
+  setInterval(checkHealth, 30000);
+}
+boot();
+</script>
+</body>
+</html>
+
+
+
+
