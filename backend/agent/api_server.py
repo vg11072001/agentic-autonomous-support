@@ -70,7 +70,9 @@ if not CRDB_URL:
     sys.exit("Set CRDB_URL env var first.")
 
 app = FastAPI(title="Support Platform API")
-
+@app.get("/api/hello")
+def hello():
+    return {"message": "Hello from FastAPI"}
 # Dev-open CORS -- lock allow_origins to your actual storefront domain
 # before production.
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],)
